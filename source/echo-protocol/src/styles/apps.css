@@ -785,18 +785,22 @@
 }
 .cal-row {
   display: grid;
-  grid-template-columns: 1.25fr 0.8fr 1.6fr 1fr;
-  gap: 8px;
-  padding: 6px 0;
+  grid-template-columns: 1fr auto;
+  gap: 1px 12px;
+  padding: 7px 0;
   border-bottom: 1px dashed #b5ab95;
+  white-space: nowrap;
 }
 .cal-row b {
   font-family: var(--f-mono);
-  font-size: 12.5px;
+  font-size: 13px;
 }
-.narrow .cal-row,
-.binder .cal-row {
-  grid-template-columns: 1fr 1fr;
+.cal-row span:nth-child(2),
+.cal-row span:nth-child(4) {
+  text-align: right;
+}
+.cal-row span:nth-child(3) {
+  font-weight: 700;
 }
 .rec-body {
   margin: 0;

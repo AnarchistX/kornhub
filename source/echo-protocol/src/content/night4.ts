@@ -169,7 +169,7 @@ Also: the tape library rotates set C Friday 06:00 for the Y2K cutover. If anyone
       id: 'n4ns2',
       at: 0,
       from: 'LANTERN',
-      when: (s) => s.flags.n4_letter === true,
+      when: (s) => s.flags.n4_letter_closed === true,
       body: () => 'Now you know why he is dead.\n— L',
     },
     {

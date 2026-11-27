@@ -222,7 +222,13 @@ export function TerminalApp({ compact }: { compact: boolean }) {
                 <b>senate_letter_draft.txt</b>
               </div>
               <div className="formno">
-                <button className="btn" onClick={() => setLetter(false)}>
+                <button
+                  className="btn"
+                  onClick={() => {
+                    setLetter(false);
+                    if (!getState().flags.n4_letter_closed) applyEffect({ flags: { n4_letter_closed: true } });
+                  }}
+                >
                   Close
                 </button>
               </div>
