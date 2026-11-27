@@ -159,7 +159,7 @@ export function TerminalApp({ compact }: { compact: boolean }) {
   const chips: string[] = ['help', 'status'];
   if (!rotated) {
     chips.push('audit mailbox pwhitlock', 'tape list');
-    if (!flags.tape_mounting && flags.tape_job !== 'running' && flags.tape_job !== 'paused') chips.push(...TAPES.map((t) => `mount ${t.id}`));
+    if (!flags.tape_mounting && flags.tape_job !== 'running' && flags.tape_job !== 'paused' && flags.tape_job !== 'done') chips.push(...TAPES.map((t) => `mount ${t.id}`));
     if (flags.tape_mounted && !flags.tape_job) chips.push('restore drafts', 'restore local', 'restore live');
     if (running) chips.push('pause');
     if (flags.tape_job === 'paused') chips.push('resume');

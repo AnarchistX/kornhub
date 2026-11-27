@@ -12,10 +12,10 @@ import { audio } from '../engine/audio';
 
 const TUTORIAL: Record<string, string> = {
   approve:
-    "ROOKIE —\nLeft is the REQUEST. Right is their PERSONNEL record.\nOPS needs Level 2. Dwayne is L2, his badge is good, and Brennan (his supervisor) signed it.\nAll clean → APPROVE.",
+    "ROOKIE —\nThe form is the REQUEST. Their PERSONNEL record comes attached.\nOPS needs Level 2. Dwayne is L2, his badge is good, and Brennan (his supervisor) signed it.\nAll clean → APPROVE.",
   clearance: 'Every area has a level. The table is in your DIRECTIVES.\nClearance too low → DENY, and cite D-1. —R',
   badge: 'Always check the badge expiry against the DATE OF ACCESS. —R',
-  change: 'CHANGE ticket. Find this change ID on the calendar (right).\nSame system, same CAB number, same window → APPROVE. —R',
+  change: 'CHANGE ticket. Find this change ID on the change calendar attached to it.\nSame system, same CAB number, same window → APPROVE. —R',
   window: 'Read the window to the minute. Calendar says one thing, ticket says another → DENY, D-8. —R',
   records: 'RECORDS ticket. Record card says level + owner.\nRequester needs the level AND the department. Both → APPROVE. —R',
   need: "Carla is L3. That record is L4. Same department doesn't save her → D-9. —R",
