@@ -1,0 +1,566 @@
+/* ============================================================ SENTINEL 4.0 shell */
+
+.os {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--slate);
+  color: var(--text);
+  animation: os-in 0.5s ease-out both;
+}
+@keyframes os-in {
+  from {
+    opacity: 0;
+    filter: brightness(2.2);
+  }
+}
+
+.banner {
+  flex: none;
+  height: 18px;
+  padding: 0 8px;
+  background: var(--banner-u);
+  color: #f2f7f0;
+  font: 600 10px/18px var(--f-mono);
+  letter-spacing: 0.18em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.3s;
+}
+.banner.secret {
+  background: var(--banner-s);
+}
+.banner.top {
+  padding-top: var(--safe-t);
+  height: calc(18px + var(--safe-t));
+}
+
+.desk {
+  position: relative;
+  z-index: 0; /* own stacking context: windows can never cover popups */
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 60% 40%, #2a3640 0%, #1d272f 55%, #141b21 100%);
+}
+
+.wallpaper {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  color: rgba(233, 223, 200, 0.1);
+  text-align: center;
+}
+.wallpaper svg {
+  width: 150px;
+  height: 150px;
+}
+.wallpaper .wp-name {
+  margin-top: 14px;
+  font: 600 15px var(--f-mono);
+  letter-spacing: 0.4em;
+}
+.wallpaper .wp-sub {
+  margin-top: 6px;
+  font: 400 11px var(--f-mono);
+  letter-spacing: 0.25em;
+}
+
+.icons {
+  position: absolute;
+  top: 14px;
+  left: 10px;
+  display: grid;
+  gap: 8px;
+}
+.dicon {
+  appearance: none;
+  width: 84px;
+  padding: 6px 2px;
+  border: 1px solid transparent;
+  background: none;
+  color: #f4f0e6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font: 500 12px/1.15 var(--f-ui);
+  text-shadow: 1px 1px 0 #000;
+  position: relative;
+}
+.dicon svg {
+  width: 34px;
+  height: 34px;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.6));
+}
+.dicon:hover,
+.dicon:focus-visible {
+  border: 1px dotted rgba(255, 255, 255, 0.6);
+  outline: none;
+}
+.dicon.pulse svg {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  50% {
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 8px rgba(255, 181, 71, 0.9));
+  }
+}
+
+.count {
+  position: absolute;
+  top: 0;
+  right: 18px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--red);
+  color: #fff;
+  font: 700 11px/18px var(--f-ui);
+  text-shadow: none;
+}
+
+/* ------------------------------------------------------------ taskbar (desktop) */
+
+.taskbar {
+  flex: none;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+  background: var(--putty);
+  border-top: 2px solid var(--putty-hi);
+  box-shadow: 0 -1px 0 var(--putty-dk);
+}
+.taskbar .btn {
+  min-height: 30px;
+  padding: 3px 10px;
+}
+.start {
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+}
+.start svg {
+  width: 18px;
+  height: 18px;
+}
+.task-btn {
+  max-width: 170px;
+  justify-content: flex-start !important;
+  overflow: hidden;
+}
+.task-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tray {
+  margin-left: auto;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 10px;
+  border: 1px solid;
+  border-color: var(--putty-dk) var(--putty-hi) var(--putty-hi) var(--putty-dk);
+  font: 500 12px var(--f-mono);
+  color: var(--text);
+  white-space: nowrap;
+}
+.eye {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.eye svg {
+  width: 18px;
+  height: 18px;
+}
+.eye.flash svg {
+  animation: eye-flash 0.9s ease-out 3;
+}
+@keyframes eye-flash {
+  50% {
+    color: var(--red);
+    transform: scale(1.25);
+  }
+}
+
+/* ------------------------------------------------------------ windows */
+
+.win {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background: var(--putty-face);
+  border: 2px solid;
+  border-color: var(--putty-hi) var(--putty-xdk) var(--putty-xdk) var(--putty-hi);
+  box-shadow: inset -1px -1px 0 var(--putty-dk), 0 22px 50px rgba(0, 0, 0, 0.45);
+  min-width: 300px;
+  min-height: 200px;
+  animation: win-open 0.16s ease-out both;
+}
+@keyframes win-open {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+}
+.win-title {
+  flex: none;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 3px 0 8px;
+  background: linear-gradient(90deg, var(--navy), var(--navy-2));
+  color: var(--paper-hi);
+  font: 600 11px var(--f-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: grab;
+  touch-action: none;
+}
+.win-title svg {
+  width: 16px;
+  height: 16px;
+}
+.win-title .t {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.win.blur .win-title {
+  background: linear-gradient(90deg, #6d685e, #8e887c);
+  color: #e4dfd3;
+}
+.win-x {
+  appearance: none;
+  width: 22px;
+  height: 20px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: var(--putty-face);
+  color: var(--text);
+  border: 2px solid;
+  border-color: var(--putty-hi) var(--putty-xdk) var(--putty-xdk) var(--putty-hi);
+  font: 700 13px/1 var(--f-ui);
+}
+.win-x:active {
+  border-color: var(--putty-xdk) var(--putty-hi) var(--putty-hi) var(--putty-xdk);
+}
+.win-body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.win-grip {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  touch-action: none;
+  background: linear-gradient(135deg, transparent 50%, var(--putty-dk) 50%, var(--putty-dk) 58%, transparent 58%, transparent 70%, var(--putty-dk) 70%, var(--putty-dk) 78%, transparent 78%);
+}
+
+/* ------------------------------------------------------------ compact (phone) */
+
+.os.compact .app-head {
+  flex: none;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 0 6px;
+  background: linear-gradient(90deg, var(--navy), var(--navy-2));
+  color: var(--paper-hi);
+}
+.app-head .title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 12px var(--f-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.app-head .title svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.app-head .clock {
+  font: 500 12px var(--f-mono);
+  opacity: 0.9;
+  white-space: nowrap;
+}
+.app-head .hbtn {
+  appearance: none;
+  min-width: 40px;
+  height: 36px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--paper-hi);
+  font: 600 13px var(--f-ui);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.app-head .hbtn svg {
+  width: 20px;
+  height: 20px;
+}
+.os.compact .app-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--putty-face);
+}
+.dock {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  background: var(--putty);
+  border-top: 2px solid var(--putty-hi);
+  box-shadow: 0 -1px 0 var(--putty-dk);
+  padding-bottom: var(--safe-b);
+}
+.dock-btn {
+  appearance: none;
+  position: relative;
+  height: 58px;
+  border: 0;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--text);
+  font: 600 10.5px var(--f-ui);
+  letter-spacing: 0.02em;
+}
+.dock-btn svg {
+  width: 26px;
+  height: 26px;
+}
+.dock-btn.on {
+  background: var(--putty-face);
+  box-shadow: inset 1px 1px 0 var(--putty-dk), inset -1px -1px 0 var(--putty-hi);
+}
+.dock-btn .count {
+  top: 4px;
+  right: calc(50% - 22px);
+}
+.dock-btn.pulse svg {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------ dialogs & popups */
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(6, 8, 10, 0.55);
+  animation: fade-in 0.2s both;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.dialog {
+  width: min(460px, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--putty-face);
+  color: var(--text);
+  border: 2px solid;
+  border-color: var(--putty-hi) var(--putty-xdk) var(--putty-xdk) var(--putty-hi);
+  box-shadow: inset -1px -1px 0 var(--putty-dk), 0 30px 60px rgba(0, 0, 0, 0.55);
+  animation: win-open 0.18s ease-out both;
+}
+.dialog .win-title {
+  cursor: default;
+}
+.dialog-body {
+  display: flex;
+  gap: 14px;
+  padding: 18px 18px 8px;
+  overflow: auto;
+}
+.dialog-body .ico svg {
+  width: 36px;
+  height: 36px;
+}
+.dialog-text {
+  flex: 1;
+  font: 400 14.5px/1.5 var(--f-ui);
+  white-space: pre-wrap;
+}
+.dialog-text .meta {
+  display: block;
+  margin-bottom: 12px;
+  font: 500 12px/1.4 var(--f-mono);
+  color: var(--text-dim);
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 18px 16px;
+}
+.dialog-actions .btn {
+  min-width: 96px;
+}
+
+.netsend .dialog-text {
+  font-family: var(--f-mono);
+  font-size: 14px;
+}
+
+.sticky-pop {
+  width: min(340px, 100%);
+  animation: sticky-in 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@keyframes sticky-in {
+  from {
+    transform: translateY(-30px) rotate(-6deg);
+    opacity: 0;
+  }
+}
+.sticky-pop .sticky {
+  font-size: 18px;
+  padding: 22px 22px 18px;
+}
+.sticky-pop .btn {
+  margin-top: 12px;
+}
+
+/* procedural error slips */
+.notices {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 55;
+  display: grid;
+  gap: 10px;
+  width: min(330px, calc(100% - 20px));
+}
+.slip {
+  position: relative;
+  padding: 14px 16px 14px 30px;
+  font: 400 13.5px/1.45 var(--f-doc);
+  animation: slip-in 0.9s steps(9) both;
+  transform-origin: top;
+  clip-path: inset(0 0 0 0);
+}
+@keyframes slip-in {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+.slip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 8px;
+  width: 10px;
+  background: radial-gradient(circle at 5px 8px, rgba(0, 0, 0, 0.28) 3px, transparent 3.5px) 0 0 / 10px 16px repeat-y;
+}
+.slip h4 {
+  margin: 0 0 6px;
+  font: 700 12px var(--f-mono);
+  letter-spacing: 0.14em;
+}
+.slip .kind {
+  display: inline-block;
+  margin-top: 8px;
+  font: 700 13px var(--f-stencil);
+  letter-spacing: 0.1em;
+  color: var(--red-ink);
+}
+.slip .btn {
+  margin-top: 10px;
+  min-height: 32px;
+  float: right;
+}
+
+.end-shift {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  background: rgba(6, 8, 10, 0.82);
+  color: var(--paper);
+  text-align: center;
+  font: 400 16px/1.6 var(--f-doc);
+  animation: fade-in 0.6s both;
+}
+.end-shift h2 {
+  margin: 0 0 8px;
+  font: 700 34px var(--f-stencil);
+  letter-spacing: 0.12em;
+}
+
+/* settings */
+.settings {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px 6px;
+  font: 500 13px var(--f-ui);
+}
+.settings label,
+.settings .srow {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.settings input[type='range'] {
+  width: 100%;
+  accent-color: var(--navy-2);
+}
+.seg {
+  display: flex;
+}
+.seg .btn {
+  flex: 1;
+  min-height: 32px;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+.menu-list {
+  display: grid;
+  gap: 6px;
+  padding: 14px 18px 4px;
+}
+.menu-list .btn {
+  justify-content: flex-start;
+  min-height: 42px;
+}
