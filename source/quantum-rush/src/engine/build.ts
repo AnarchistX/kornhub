@@ -24,6 +24,7 @@ export interface LevelSpec {
   fadeBars?: number; // cut levels: the music fades out from the finish
   tolerance: number; // validator window, seconds either way
   sections: SectionSpec[];
+  loopBars?: number; // endless runs loop the song every this many bars
 }
 
 interface Ev {
@@ -141,6 +142,8 @@ export function buildLevel(spec: LevelSpec): Level {
     { t: t + TAP, down: false },
   ];
   const tap = (t: number) => inputs.push(...tapAt(t));
+  /** Ground kept either side of a pit: what an early or late press within the window moves the jump by. */
+  const slack = () => sim.p.speed * BASE_SPEED * (spec.tolerance + 0.02) + 0.15;
   const landedAfter = (t: number) => (q: PlayerState) => q.grounded && q.airTime === 0 && q.t > t + 0.08;
 
   const hazardOk = (x0: number, x1: number, what: string) => {
@@ -218,8 +221,9 @@ export function buildLevel(spec: LevelSpec): Level {
         lo = c.y0;
         hi = c.y0 + 1;
       }
-      // where the path slides on the floor, keep that floor; elsewhere leave clearance below
-      const floorTop = lo <= c.y0 + 0.02 ? c.y0 : Math.max(c.y0 - 3, Math.floor((lo - c.clear) * 2) / 2);
+      // the floor never drops below the section's base (a hole next to a stretch where the path
+      // slides would catch a slightly early runner); under high flight it rises to leave clearance
+      const floorTop = Math.max(c.y0, Math.floor((lo - c.clear) * 2) / 2);
       const ceilBottom = Math.ceil((hi + c.clear) * 2) / 2;
       cols.push({ x, lo: floorTop, hi: ceilBottom });
     }
@@ -244,29 +248,34 @@ export function buildLevel(spec: LevelSpec): Level {
     while (fluxMarks.length >= (endX === null ? 2 : 1)) {
       const a = fluxMarks.shift()!;
       const b = fluxMarks[0];
-      const until = b ? b.landX - 1.3 : (endX ?? a.leaveX) - 2.5;
+      // clear ground after leaving (a late flip) and before landing (an early one)
+      const v = sim.p.speed * BASE_SPEED;
+      const until = b ? b.landX - (0.9 + v * (spec.tolerance + 0.01)) : (endX ?? a.leaveX) - 2.5;
       const base = a.fromFloor ? floorH : ceilH;
       const dir: 1 | -1 = a.fromFloor ? 1 : -1;
-      for (let x = a.leaveX + 1.9; x < until; x += 1) thorn(x, base, dir, a.t);
+      // a flip starts slowly: allow for the time it takes to rise clear of the thorns
+      for (let x = a.leaveX + Math.max(1.9, 0.6 + v * (spec.tolerance + 0.09)); x < until; x += 1) thorn(x, base, dir, a.t);
     }
   };
 
   const startSection = (si: number) => {
     const sec = spec.sections[si];
     const t = barT(sec.bar);
-    runTo(t);
-    const x = sim.p.x;
+    // crystals and gates sit a tenth of a second before the downbeat, so a press on the downbeat
+    // already belongs to the new form and speed
+    runTo(si > 0 ? t - 0.1 : t);
+    const x = sim.p.x + (si > 0 ? 0.06 : 0);
     const form = sec.form ?? curForm;
     if (curForm === 'flux') flushFlux(x);
     if (comet) finishComet(x);
-    const db = sectionDb(song.barDb, sec.bar, spec.sections[si + 1]?.bar ?? spec.endBar);
+    const db = sectionDb(song.barDb, sec.bar, spec.sections[si + 1]?.bar ?? spec.endBar, spec.loopBars);
     sections.push({ t, x, form, speed: sec.speed ?? sim.p.speed, intensity: db, palette: sec.palette ?? 0 });
     if (si > 0 && sec.speed && sec.speed !== sim.p.speed) objs.push({ kind: 'gate', x: x - 0.5, y: floorH, w: 1, h: 4.5, speed: sec.speed, beat: t });
     if (si > 0 && form !== curForm) objs.push({ kind: 'crystal', x: x - 0.5, y: floorH + 0.2, w: 1, h: 2.6, form, beat: t });
     if (form === 'flux' || form === 'blink') setCeiling(x - 1, floorH + (sec.ceil ?? (form === 'flux' ? 6 : 5)));
     else setCeiling(x, null);
     if (form === 'comet') {
-      comet = { clear: sec.clear ?? 1.4, x0: x, y0: floorH };
+      comet = { clear: sec.clear ?? 1.6, x0: x, y0: floorH };
       cometPath = [];
     }
     curForm = form;
@@ -345,7 +354,7 @@ export function buildLevel(spec: LevelSpec): Level {
         if (curForm !== 'spark') fail('gaps need the spark form');
         if (!p.grounded) fail('gap while airborne');
         const pr = predict(tapAt(e.t), landedAfter(e.t), 2);
-        pit(x0 + 1.0, pr.end.x - 0.8);
+        pit(x0 + slack(), pr.end.x - slack());
         lastGround = [];
         lastTakeoff = { t: e.t, x: x0 };
         tap(e.t);
@@ -359,7 +368,8 @@ export function buildLevel(spec: LevelSpec): Level {
         const pr = predict(tapAt(e.t), landedAfter(e.t), 2.5);
         for (const o of lastGround) objs.splice(objs.indexOf(o), 1);
         lastGround = [];
-        pit(Math.max(lastTakeoff.x + 1.0, floor.x + 0.5), pr.end.x - 0.8);
+        // the second jump's landing moves with both presses, so the far side gets extra ground
+        pit(Math.max(lastTakeoff.x + slack(), floor.x + 0.5), pr.end.x - slack() - 0.75 * sim.p.speed);
         tap(e.t);
         break;
       }
@@ -428,8 +438,12 @@ export function buildLevel(spec: LevelSpec): Level {
   return level;
 }
 
-function sectionDb(barDb: number[], a: number, b: number) {
-  const seg = barDb.slice(Math.max(0, a), Math.max(a + 1, b));
+function sectionDb(barDb: number[], a: number, b: number, loop?: number) {
+  const seg: number[] = [];
+  for (let i = Math.max(0, a); i < Math.max(a + 1, b); i++) {
+    const v = barDb[loop ? i % loop : i];
+    if (v !== undefined) seg.push(v);
+  }
   const mean = seg.reduce((s, v) => s + v, 0) / Math.max(1, seg.length);
   return Math.max(0, Math.min(1, (mean + 30) / 18)); // −30 dB → 0, −12 dB → 1
 }

@@ -24,7 +24,7 @@ export function getEndless(id: string, seed: number): Level {
   const spec = levelSpec(id)!;
   for (let i = 0; i < 8; i++) {
     try {
-      const e: LevelSpec = endlessSpec(spec.song, seed + i * 7919, 64, spec.world);
+      const e: LevelSpec = endlessSpec(spec.song, seed + i * 7919, 160, spec.world);
       e.name = `${spec.name} · Endless`;
       return buildLevel(e);
     } catch {

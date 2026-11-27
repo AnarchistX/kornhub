@@ -59,7 +59,8 @@ export function validate(level: Level): Report {
   check('exact', replay(level, level.inputs));
   check(`early ${Math.round(tol * 1000)}ms`, replay(level, level.inputs, -tol));
   check(`late ${Math.round(tol * 1000)}ms`, replay(level, level.inputs, tol));
-  for (let i = 0; i < 12; i++) check(`jitter #${i + 1}`, replay(level, level.inputs, 0, tol, 7 + i * 31));
+  // independent per-press error, three quarters of the window (the shifts above cover a steady offset)
+  for (let i = 0; i < 12; i++) check(`jitter #${i + 1}`, replay(level, level.inputs, 0, tol * 0.75, 7 + i * 31));
   level.shardInputs.forEach((extra, idx) => {
     const merged = [...level.inputs, ...extra].sort((a, b) => a.t - b.t || (a.down ? 1 : -1));
     check(`shard ${idx + 1} route`, replay(level, merged), idx);

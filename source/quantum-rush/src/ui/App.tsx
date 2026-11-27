@@ -377,6 +377,13 @@ function Play({
           },
           onComplete: (r) => {
             const m = g!.opt.mode;
+            if (m === 'endless') {
+              // reaching the end of a generated run is the best an endless run can do
+              update((s) => ({ ...s, levels: { ...s.levels, [id]: { ...progressOf(s, id), endless: Math.max(progressOf(s, id).endless, r.beats) } } }));
+              g!.pause();
+              setEndlessOver(r);
+              return;
+            }
             update((s) => {
               const p = { ...progressOf(s, id) };
               if (m === 'normal') {
@@ -385,7 +392,6 @@ function Play({
                 p.attempts++;
                 p.shards |= r.shards;
               } else if (m === 'practice') p.practiceBest = 1;
-              else if (m === 'endless') p.endless = Math.max(p.endless, r.beats);
               const next = { ...s, levels: { ...s.levels, [id]: p } };
               const fresh = newUnlocks(next);
               if (fresh.length) {

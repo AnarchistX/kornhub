@@ -5,11 +5,12 @@ import type { Form, Level, Obj } from './types';
 export const TICK = 1 / 240;
 export const BASE_SPEED = 10.4; // tiles per second at 1×
 
-// Spark: a fixed arc so skill carries between songs (apex 2.25 tiles, 0.5 s in the air).
-export const SPARK_G = 72;
-export const SPARK_V0 = 18;
-export const NODE_V = 18;
-export const BOOST_V = 26;
+// Spark: a fixed arc so skill carries between songs (apex 2.1 tiles, 0.44 s in the air: one jump per
+// beat fits up to 130 BPM).
+export const SPARK_G = 86;
+export const SPARK_V0 = 19;
+export const NODE_V = 19;
+export const BOOST_V = 28;
 // Flux: gravity flips toward the other surface.
 export const FLUX_G = 80;
 export const FLUX_KICK = 4;
@@ -22,10 +23,10 @@ export const PHASE_TIME = 0.24;
 export const BODY_W = 0.4; // half-width against solids
 export const BODY_H = 0.5; // half-height against solids
 export const HIT = 0.31; // half-size against hazards
-export const BUFFER = 0.1;
+export const BUFFER = 0.14; // a press this early before landing still counts
 export const COYOTE = 0.06;
 export const STEP_SNAP = 0.2; // ledges lower than this are climbed instead of crashed into
-export const NODE_R = 0.95; // tap radius around a pulse node
+export const NODE_R = 1.15; // tap radius around a pulse node (bigger than the art, on purpose)
 export const SHARD_R = 0.6;
 
 export type DeathCause = 'thorn' | 'wall' | 'fall' | 'rotor' | 'laser' | 'phase';
@@ -183,7 +184,8 @@ export class Sim {
           if (o.kind !== 'node' || p.nodes.includes(i)) continue;
           const cx = o.x + o.w / 2;
           const cy = o.y + o.h / 2;
-          if (Math.hypot(p.x - cx, p.y - cy) <= NODE_R) {
+          // judged mostly on timing: height counts for less than distance along the run
+          if (Math.hypot(p.x - cx, (p.y - cy) * 0.6) <= NODE_R) {
             p.nodes.push(i);
             this.jump(NODE_V, 'node');
             break;
