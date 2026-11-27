@@ -45,7 +45,7 @@ function CallWindow({ call }: { call: CallDef }) {
   // A tap meant for "Skip" must not land on whatever replaces it (End call, or a choice).
   const readyAt = useRef(0);
   useEffect(() => {
-    if (done) readyAt.current = performance.now() + 350;
+    if (done) readyAt.current = performance.now() + 280;
   }, [done, nodeId]);
   const ready = () => performance.now() >= readyAt.current;
 

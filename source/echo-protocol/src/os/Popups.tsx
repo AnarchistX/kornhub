@@ -60,7 +60,7 @@ export function NetSendPopup() {
               className="btn"
               onClick={() => {
                 closePopup();
-                openApp('syscon');
+                openApp('syscon', { sysconTab: ns.tab ?? null });
               }}
             >
               Open SYSCON

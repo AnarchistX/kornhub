@@ -74,7 +74,7 @@ export function TitleScreen() {
       <div className="title-foot">
         MARROW CREEK · 1999
         <br />
-        PREVIEW BUILD · NIGHT 1
+        TEN NIGHTS · THREE ACTS · NINE ENDINGS
       </div>
       {settings && (
         <div className="scrim" onClick={() => setSettingsOpen(false)}>

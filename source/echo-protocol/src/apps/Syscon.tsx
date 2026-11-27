@@ -1,10 +1,10 @@
 // SYSCON · the Y2K rollover console Curtis Boyd built "for watching".
 // Gate 1, RECSYS-Y2K-0047, the B3 air handlers, live sessions and the NOC fax on one screen.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { applyEffect, getState, resolveAlert, useGame } from '../engine/store';
 import { loginName } from '../engine/text';
 import { audio } from '../engine/audio';
-import { confirmDialog } from '../os/ui';
+import { confirmDialog, setUi, useUi } from '../os/ui';
 import { Cctv } from './Cctv';
 import {
   GRACE,
@@ -43,12 +43,12 @@ function lamps(r: Roll, m: number): Record<Tab, Lamp> {
   };
 }
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'gate', label: 'Gate 1' },
-  { id: 'recsys', label: 'RECSYS' },
-  { id: 'hvac', label: 'B3 HVAC' },
-  { id: 'sessions', label: 'Sessions' },
-  { id: 'fax', label: 'Fax' },
+const TABS: { id: Tab; label: string; short: string }[] = [
+  { id: 'gate', label: 'Gate 1', short: 'Gate' },
+  { id: 'recsys', label: 'RECSYS', short: '0047' },
+  { id: 'hvac', label: 'B3 HVAC', short: 'HVAC' },
+  { id: 'sessions', label: 'Sessions', short: 'Users' },
+  { id: 'fax', label: 'Fax', short: 'Fax' },
 ];
 
 export function SysconApp({ compact }: { compact: boolean }) {
@@ -61,14 +61,13 @@ export function SysconApp({ compact }: { compact: boolean }) {
   const r = roll(s);
   void flags;
 
-  // Alarms pull the console to the panel that needs you.
-  const prev = useRef({ ov: r.ov, hvac: r.hvac, fax: minute >= T.window });
+  // An alarm popup's "Open SYSCON" asks for its panel. SYSCON never switches panels on its own:
+  // a tab flipping under a finger could turn a tap on Start into a tap on Release convoy.
+  const want = useUi((u) => u.sysconTab);
   useEffect(() => {
-    const p = prev.current;
-    if (r.ov && r.ov !== p.ov) setTab('gate');
-    if (r.hvac === 'fault' && p.hvac === 'ok') setTab('hvac');
-    prev.current = { ov: r.ov, hvac: r.hvac, fax: minute >= T.window };
-  }, [r.ov, r.hvac, minute]);
+    if (want && TABS.some((t) => t.id === want)) setTab(want as Tab);
+    if (want) setUi({ sysconTab: null });
+  }, [want]);
 
   const say = (line: string) => setLog((l) => [line, ...l].slice(0, 4));
   const act = (e: ReturnType<typeof holdGate>, line: string, sfx: 'beep' | 'stamp' | 'click' | 'error' = 'beep') => {
@@ -116,10 +115,30 @@ export function SysconApp({ compact }: { compact: boolean }) {
             }}
           >
             <i className={`lamp ${L[t.id]}`} />
-            {t.label}
+            <span className="full">{t.label}</span>
+            <span className="short">{t.short}</span>
           </button>
         ))}
       </nav>
+      {r.ov > 0 && r.gate === 'held' && (
+        <div className="sc-alarm top" role="alert">
+          <div>
+            <b>REMOTE OVERRIDE · GATE 1</b>
+            <span>svc_gate @ WAR-ROOM-03 · accepted automatically at {hhmm(r.ovAt + GRACE)}</span>
+          </div>
+          <button className="btn big deny" onClick={() => act(denyOverride(getState()), `override ${r.ov} DENIED from OPS-NOC-01`, 'stamp')}>
+            <span>Deny</span>
+          </button>
+        </div>
+      )}
+      {r.hvac === 'fault' && tab !== 'hvac' && (
+        <button className="sc-alarm top as-btn" onClick={() => (audio.play('click'), setTab('hvac'))}>
+          <div>
+            <b>B3 PRESSURE {Math.round(r.pa)} Pa · RISING</b>
+            <span>AHU-1 fault · containment is lost at 0 Pa · tap for B3 HVAC</span>
+          </div>
+        </button>
+      )}
       <div className="sc-body">
         {tab === 'gate' && <GatePanel r={r} minute={minute} act={act} />}
         {tab === 'recsys' && <JobPanel r={r} minute={minute} me={me} act={act} />}
@@ -178,18 +197,6 @@ function GatePanel({ r, minute, act }: { r: Roll; minute: number; act: Act }) {
         <Row k="REMOTE" v={r.boydOut ? 'disabled · parent session logged off' : 'svc_gate @ WAR-ROOM-03 · enabled'} tone={r.boydOut ? 'ok' : 'warn'} />
         {r.denied > 0 && <Row k="DENIED" v={`${r.denied} remote override${r.denied > 1 ? 's' : ''}`} />}
       </div>
-      {r.ov > 0 && r.gate === 'held' && (
-        <div className="sc-alarm" role="alert">
-          <div>
-            <b>REMOTE OVERRIDE REQUESTED</b>
-            <span>svc_gate @ WAR-ROOM-03 · OPEN GATE 1</span>
-            <span>Accepted automatically at {hhmm(r.ovAt + GRACE)}</span>
-          </div>
-          <button className="btn big deny" onClick={() => act(denyOverride(getState()), `override ${r.ov} DENIED from OPS-NOC-01`, 'stamp')}>
-            <span>Deny</span>
-          </button>
-        </div>
-      )}
       {r.gate === 'closed' && <p className="sc-note">Convoy HL-7 is due at the gate at 23:30.</p>}
       {(r.gate === 'requested' || r.gate === 'held') && (
         <div className="sc-actions">
@@ -329,13 +336,14 @@ function HvacPanel({ r, minute, say }: { r: Roll; minute: number; say: (l: strin
           <text y="26" textAnchor="middle" className="pid-t">D-2 · {r.d2.toUpperCase()}</text>
         </g>
         {/* B3 */}
-        <g transform="translate(262 58)">
-          <rect width="86" height="90" fill="#16201a" stroke={tone === 'bad' ? '#c23b22' : tone === 'warn' ? '#ffb547' : '#5fd17a'} strokeWidth="2" />
-          <text x="43" y="20" textAnchor="middle" className="pid-t">B3 · CONTAINMENT</text>
-          <text x="43" y="56" textAnchor="middle" className={`pid-pa ${tone}`}>
+        <g transform="translate(262 52)">
+          <rect width="88" height="100" fill="#16201a" stroke={tone === 'bad' ? '#c23b22' : tone === 'warn' ? '#ffb547' : '#5fd17a'} strokeWidth="2" />
+          <text x="44" y="16" textAnchor="middle" className="pid-t">B3</text>
+          <text x="44" y="27" textAnchor="middle" className="pid-t">CONTAINMENT</text>
+          <text x="44" y="66" textAnchor="middle" className={`pid-pa ${tone}`}>
             {pa}
           </text>
-          <text x="43" y="76" textAnchor="middle" className="pid-t">Pa</text>
+          <text x="44" y="86" textAnchor="middle" className="pid-t">Pa</text>
         </g>
         <text x="14" y="190" className="pid-t">OUTSIDE AIR</text>
         <text x="346" y="190" textAnchor="end" className="pid-t">

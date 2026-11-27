@@ -215,25 +215,55 @@ come from J. Kraemer instead of Ray.
   none, `packet_strength` = case files confirmed (0–5). Each choice gets its own
   response call or message. End of Act II.
 
-**Act III — ROLLOVER** (Dec 31, 22:00 → Jan 1, 01:00). The facility on Y2K
-watch. Near real-time finale at the console: the 0047 countdown, the transfer
-truck at the gate, a Directorate team, an FBI operation with a leak. Short,
-tense hacking sequences (kill or reroute 0047, hold the gate, trace the leak,
-get the evidence out on a 1999 network).
+**Act III — ROLLOVER** (Night 10, Fri Dec 31, 22:00 → 01:00) *(built)*. One
+three-hour shift at ~2.6 s per game minute, opened by the `rollover` cutscene
+(snow on Route 9, the convoy already inside the fence). Curtis Boyd puts
+**SYSCON** on your desk at 22:04 "for watching". Three things happen around
+midnight, and the queue keeps running underneath them:
 
-**Endings** (track as `ending` id):
+- **Gate 1 (23:30).** Convoy HL-7 (OPS-Y2K-0058, window 23:30–00:30) asks for the
+  gate, in the queue and in SYSCON. Release it, or hold it on the night lead's
+  exception (+6 suspicion). Unanswered at 23:40, the war room opens it remotely.
+  While you hold, `svc_gate @ WAR-ROOM-03` tries remote overrides at 23:40, 23:48,
+  23:56, 00:04, 00:12 and 00:21; each auto-accepts after 4 minutes unless you
+  DENY it. Revoking `svc_gate` does nothing (it restarts under its parent
+  session); revoking **cboyd**, the person behind it, ends the overrides (Kraemer's
+  call names who sits at terminal 03). At 00:30 the window closes and the convoy
+  is no longer authorized: `r_gate = expired`.
+- **RECSYS-Y2K-0047 (23:50).** The job you released on Night 2 runs `/PURGE`.
+  Its help lists `/ARCHIVE` (copies to tape set D in the Deputy Director's
+  custody, then purges) and `/TEST` (a CAB rehearsal that writes nothing and logs
+  SUCCESS): the quiet fix, +3. Or hold it outright on the lead exception, +12.
+- **B3 HVAC (00:00).** AHU-1's controller reads 01/01/1900 and stops; B3
+  pressure rises 3 Pa a minute from −42. Lindqvist's 23:00 call (also saved to
+  Notes) gives the order: START AHU-2, OPEN damper D-2, then ISOLATE AHU-1. Wrong
+  order costs pressure. At 0 Pa containment is lost: `echo`, immediately.
+- **Fax (00:30).** Holiday forwarding ends and the NOC fax can dial out once: to
+  Calloway (needs `fbi_contact`), Simon Hale (needs `reyes_press`) or LANTERN.
+
+Calls by branch: Calloway (warrant at 00:30, keep the records alive; asks who the
+leak is at 00:08), Reyes from the B3 loading dock, LANTERN ("give it the gate",
+and again at 23:56 if you held), Ashcombe (release it / let 0047 run; he calls the
+moment you hold), Pike (backs a hold if she is an ally), Kraemer, Lindqvist.
+
+**Endings** (`resolveEnding` in `content/rollover.ts`, epilogues in
+`content/endings.ts`, one cutscene each):
 
 | id | Name | How |
 |---|---|---|
-| `daylight` | Daylight | Expose ECHO, stocks secured, you survive (best) |
-| `bureau` | The Bureau | FBI gets it all; buried and classified; new name for you |
-| `blackout` | Blackout | 0047 succeeds; nothing proven; you're let go; ECHO continues |
-| `lantern` | Lantern | You hand it to the Directorate; money; a news item months later |
-| `company` | Company Man | You side with Ashcombe; promoted; epilogue 2003 |
-| `detained` | Detained | Suspicion maxed; arrested under the Espionage Act |
-| `route9` | Route 9 | You dig too openly with no allies. Whitlock's ending |
-| `echo` | Echo | Containment lost during rollover (worst) |
-| `terminated` | Terminated | Three write-ups in Act I (early fail) |
+| `daylight` | Daylight | Convoy held, records saved (`/TEST` or held), the press has it (Act II choice or the 00:30 fax), 3+ case files (best) |
+| `bureau` | The Bureau | Convoy held and the FBI is involved (Act II choice, the fax, or Calloway's number) |
+| `route9` | Route 9 | Convoy held, nobody coming: no FBI, no press. Whitlock's ending |
+| `blackout` | Blackout | Convoy gone and you weren't on anyone's side |
+| `lantern` | Lantern | Convoy gone, LANTERN's team waiting on Route 9 (Act II choice, or you opened it for LANTERN) |
+| `company` | Company Man | You took Ashcombe's offer, released the convoy, and let 0047 purge |
+| `echo` | Echo | B3 pressure reached 0 Pa (worst) |
+| `detained` | Detained | Suspicion reached 100 |
+| `terminated` | Terminated | Three write-ups |
+
+The ending screen shows the epilogue, where everyone ended up, your record,
+**endings found** on this device (`kxrnage.echo.endings.v1`), and two replays:
+the finale, or Night 9 again (a separate checkpoint, `…checkpoint.v1.n9`).
 
 ## 7. Systems
 
@@ -375,7 +405,10 @@ safe-area aware. Desktop gets draggable windows.
    voice-only calls, story alerts, the night-lead role. Nights 5–7.
 4. **M4 (done):** Nights 8–9, the Act II branch (five recipients) with response
    calls and messages, Act II dawns, report remarks and end card.
-5. **M5:** Act III Rollover and every ending. Polish, music integration.
+5. **M5 (done):** Act III Rollover: SYSCON (gate overrides, 0047 switches,
+   B3 failover, sessions, fax), Night 10 and every ending with its own
+   cutscene and epilogue, endings found, replays from the finale or Night 9.
+6. **M6:** Music integration once the tracks exist; a polish pass from playtests.
 
 ## 11. Clue ledger
 

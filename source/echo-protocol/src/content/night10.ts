@@ -25,6 +25,7 @@ const overrides: NetSendDef[] = OVERRIDES.map((_, i) => ({
   at: 0,
   from: 'SYSCON',
   alarm: true,
+  tab: 'gate',
   when: (s: S) => Number(s.flags.r_ov) === i + 1,
   body: (s: S) =>
     `REMOTE OVERRIDE · GATE 1\n\nsource   svc_gate @ WAR-ROOM-03\nrequest  OPEN GATE 1 (convoy HL-7)\n\nAccepted automatically at ${hhmm(Number(s.flags.r_ov_at) + GRACE)} unless the NOC denies it.\nSYSCON → GATE 1 → DENY.`,
@@ -66,6 +67,7 @@ const netsends: NetSendDef[] = [
     at: T.rollover,
     from: 'SYSCON',
     alarm: true,
+    tab: 'hvac',
     when: (s) => roll(s).hvac === 'fault',
     body: () =>
       '*** HVAC-CTL ALARM · B3 CONTAINMENT ***\n\nAHU-1 CONTROLLER FAULT · DATE 01/01/1900\nB3 differential pressure −42 Pa and rising.\nContainment is lost at 0 Pa.\n\nManual control unlocked: SYSCON → B3 HVAC.',
@@ -88,6 +90,8 @@ const netsends: NetSendDef[] = [
     id: 'n10ns_fax',
     at: T.window + 1,
     from: 'SYSCON',
+    alarm: true,
+    tab: 'fax',
     body: () => 'OUTSIDE LINES RESTORED · holiday forwarding off.\nThe NOC fax can dial out again: SYSCON → FAX.',
   },
   {
@@ -425,6 +429,7 @@ export const NIGHT10: NightDef = {
   longDate: 'December 31, 1999',
   daysLeft: 0,
   minuteMs: 2600,
+  intro: 'rollover',
   startHour: 22,
   shiftMinutes: T.end,
   endLine: 'ROLLOVER COMPLETE · THE WAR ROOM HAS THE CONSOLE',

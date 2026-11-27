@@ -46,6 +46,16 @@ function rayRemark(s: GameState) {
     if (n === 8 && s.flags.ashcombe === 'accepted') parts.push("The Deputy Director's office says you're staying on as lead through the rollover. Congratulations, I suppose.");
     if (n === 8 && s.flags.ashcombe === 'refused') parts.push('The Deputy Director asked me whether you are "a team player." I said yes. Don\'t make me a liar.');
     if (n === 9) parts.push('Change freeze is in effect. Merry Christmas.');
+    if (n === 10) {
+      const g = s.flags.r_gate;
+      if (g === 'held' || g === 'expired') parts.push("You held the Deputy Director's convoy on a night lead exception. I have been on the phone since 23:31.");
+      else if (s.flags.r_unanswered) parts.push('The convoy sat at the gate for ten minutes waiting on the NOC. Curtis had to open it from down here.');
+      else parts.push('Convoy out on time. Smooth rollover. Thank you.');
+      if (s.flags.r_job === 'held') parts.push('You held 0047. The Deputy Director would like a word. So would I.');
+      if (s.flags.r_hvac === 'stable') parts.push('Facilities says you failed B3 over by hand at midnight. Lindqvist wants to buy you a drink.');
+      if (s.flags.r_rev_cboyd) parts.push("And you kicked Curtis off the network in the middle of the war room. He's still red.");
+      parts.push('Happy New Year.');
+    }
     return `${parts.join('\n\n')}\n\n— J.K.`;
   }
   return `${parts.join('\n\n')}\n\n— R.`;

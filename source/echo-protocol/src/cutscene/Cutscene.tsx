@@ -120,7 +120,7 @@ function ShotView({ shot, onDone }: { shot: Shot; onDone: () => void }) {
       )}
       {caption && (
         <div className="caption paper">
-          {shot.tag && <div className="tag">{shot.tag}</div>}
+          {shot.tag && <div className="tag">{typeof shot.tag === 'function' ? shot.tag(getState()) : shot.tag}</div>}
           <p>
             {typed}
             {!done && <span className="caret">▌</span>}

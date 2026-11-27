@@ -24,10 +24,12 @@ interface UiState {
   confirm: { title: string; text: string; ok: string; onOk: () => void } | null;
   eyeFlash: number;
   title: boolean; // showing the title screen (the saved game stays loaded underneath)
+  sysconTab: string | null; // panel an alarm asked SYSCON to show
 }
 
 let ui: UiState = {
   title: true,
+  sysconTab: null,
   wins: [],
   active: null,
   personnel: null,

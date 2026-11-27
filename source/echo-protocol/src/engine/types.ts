@@ -169,6 +169,7 @@ export interface NetSendDef {
   at: number;
   from: string;
   alarm?: boolean; // a SYSCON alarm: red, with a button that opens SYSCON
+  tab?: string; // the SYSCON panel that button opens
   body: (s: GameState) => string;
   when?: (s: GameState) => boolean;
   effect?: Effect;
@@ -233,6 +234,8 @@ export interface NightDef {
   records: string[]; // ids of records in the index tonight
   /** Night-specific simulation (e.g. the Night 4 tape restore). Pure: returns the next state. */
   onTick?: (s: GameState) => GameState;
+  /** A cutscene played between the night card and the login screen. */
+  intro?: string;
   /** Clock hour the shift starts (default 23) and its length in game minutes (default 480). */
   startHour?: number;
   shiftMinutes?: number;

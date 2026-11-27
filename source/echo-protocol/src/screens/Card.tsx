@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { advanceNight, go, useGame } from '../engine/store';
+import { advanceNight, go, playCutscene, useGame } from '../engine/store';
 import { NIGHTS } from '../content/nights';
 import { audio } from '../engine/audio';
 import { resetUi } from '../os/ui';
@@ -15,18 +15,25 @@ export function NightCard() {
     resetUi();
   }, []);
 
+  const proceed = () => {
+    const intro = NIGHTS[n]?.intro;
+    if (intro) playCutscene(intro, 'boot');
+    else go('boot');
+  };
+
   useEffect(() => {
     if (ended) return;
     audio.setAmbience('none');
     audio.play('thunk');
-    const t = window.setTimeout(() => go('boot'), 5600);
+    const t = window.setTimeout(proceed, 5600);
     return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ended, n]);
 
   if (ended) return <div className="card-screen" />;
   const def = NIGHTS[n];
   return (
-    <div className="card-screen" onClick={() => go('boot')} role="button" aria-label="Continue">
+    <div className="card-screen" onClick={proceed} role="button" aria-label="Continue">
       <div key={n}>
         {def.act && (
           <div className="l act" style={{ animationDelay: '0.1s' }}>

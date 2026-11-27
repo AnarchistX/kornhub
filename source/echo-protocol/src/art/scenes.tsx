@@ -2,6 +2,7 @@
 // Every scene uses a 1600×1600 canvas with preserveAspectRatio="slice": the key subject sits in the
 // centre (x 450–1150, y 380–1220) so it survives both portrait phones and widescreen monitors.
 import { useId } from 'react';
+import { ConvoyScene, InterceptScene, LedgerScene, MidnightScene, MirrorScene, SealedScene } from './scenes3';
 
 export const INK = '#0f1216';
 export const PAPER = '#e9dfc8';
@@ -483,5 +484,13 @@ export const SCENES = {
   gate: GateScene,
   noc: NocScene,
   dawn: DawnScene,
+  convoy: () => <ConvoyScene />,
+  raid: () => <ConvoyScene raid />,
+  midnight: () => <MidnightScene />,
+  blackout: () => <MidnightScene dark />,
+  ledger: LedgerScene,
+  mirror: MirrorScene,
+  sealed: SealedScene,
+  intercept: InterceptScene,
 } as const;
 export type SceneId = keyof typeof SCENES;

@@ -78,7 +78,8 @@ function CaseCard({ c, solved }: { c: Case; solved: boolean }) {
       <span className="pin" />
       <h3>{c.title}</h3>
       {c.questions.map((q) => {
-        const picks = board[q.id] ?? [];
+        // A confirmed file always shows its answers, whatever is (or isn't) in the saved picks.
+        const picks = solved ? q.slots.map((x) => x.answer) : (board[q.id] ?? []);
         const parts = q.text.split(/(\{\d\})/);
         const out: ReactNode[] = [];
         for (let i = 0; i < parts.length; i++) {

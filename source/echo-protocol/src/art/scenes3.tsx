@@ -35,7 +35,7 @@ function BoxTruck({ x, y, k = 1, lights = true, u }: { x: number; y: number; k?:
         <>
           <circle cx="292" cy="130" r="20" fill={PAPER} />
           <circle cx="292" cy="196" r="12" fill="#e7c07a" />
-          <Glow u={u} cx={x + 292 * k} cy={y + 130 * k} r={300 * k} k={0.9} />
+          <Glow u={u} cx={292} cy={130} r={300} k={0.9} />
         </>
       )}
       {/* exhaust */}
@@ -87,20 +87,25 @@ export function ConvoyScene({ raid = false }: { raid?: boolean }) {
         <circle cx="670" cy="1055" r="7" fill={RED} />
       </g>
       {raid &&
-        [380, 1260].map((cx, i) => (
-          <g key={i} transform={`translate(${cx} 1250)`}>
+        [
+          [1010, 1032, 0.8],
+          [1340, 1058, 0.86],
+        ].map(([cx, cy, k], i) => (
+          <g key={i} transform={`translate(${cx} ${cy}) scale(${k})`}>
             <path d="M-170 40 L-140 -30 L130 -30 L170 40 L170 90 L-170 90Z" fill="#07090b" />
             <path d="M-120 -26 L-96 -76 L96 -76 L120 -26Z" fill="#11151a" />
             <rect x="-60" y="-96" width="120" height="20" fill="#11151a" />
             <rect x="-56" y="-94" width="54" height="16" fill={RED} className="beacon" />
             <rect x="2" y="-94" width="54" height="16" fill={PAPER} opacity="0.85" />
-            <Glow u={u} cx={cx - 30} cy={1166} r={170} k={0.6} />
+            <circle cx="-110" cy="92" r="28" fill="#05070a" stroke="#1a1f26" strokeWidth="6" />
+            <circle cx="110" cy="92" r="28" fill="#05070a" stroke="#1a1f26" strokeWidth="6" />
+            <Glow u={u} cx={-30} cy={-86} r={190} k={0.65} />
           </g>
         ))}
       {raid && (
         <g fill="#05070a">
-          {[560, 640, 980].map((x, i) => (
-            <g key={i} transform={`translate(${x} ${1160 + (i % 2) * 20})`}>
+          {[880, 1170, 1240].map((x, i) => (
+            <g key={i} transform={`translate(${x} ${1040 + (i % 2) * 10}) scale(0.62)`}>
               <circle cx="0" cy="-150" r="22" />
               <path d="M-38 -120 L38 -120 L46 30 L-46 30Z" />
               <path d="M-26 30 L-20 120 L-4 120 L0 40 L4 120 L20 120 L26 30Z" />
@@ -207,28 +212,35 @@ export function LedgerScene() {
         <text x="800" y="470" textAnchor="middle" fontFamily="IBM Plex Sans, sans-serif" fontWeight="700" fontSize="78" fill={INK}>
           LAB ON THE RIDGE
         </text>
-        <text x="800" y="530" textAnchor="middle" fontFamily="Courier Prime, monospace" fontSize="30" fill={INK}>
-          Records show a banned germ stock at a W.Va. Army annex
+        <text x="800" y="528" textAnchor="middle" fontFamily="Courier Prime, monospace" fontSize="25" fill={INK}>
+          Records show banned germ stock at a W.Va. Army annex
         </text>
-        <text x="800" y="568" textAnchor="middle" fontFamily="Courier Prime, monospace" fontSize="30" fill={INK}>
-          was to leave the country on New Year&apos;s Eve
+        <text x="800" y="562" textAnchor="middle" fontFamily="Courier Prime, monospace" fontSize="25" fill={INK}>
+          was set to leave the country on New Year&apos;s Eve
         </text>
         {/* the photo: Gate 1 */}
+        <clipPath id={`ph${u}`}>
+          <rect x="380" y="610" width="520" height="380" />
+        </clipPath>
         <rect x="380" y="610" width="520" height="380" fill={INK} />
-        <rect x="380" y="610" width="520" height="380" fill={`url(#hL${u})`} opacity="0.25" />
-        <rect x="430" y="800" width="300" height="150" fill="#1a1f26" />
-        <rect x="455" y="830" width="150" height="34" fill={PAPER} opacity="0.85" />
-        <circle cx="760" cy="900" r="26" fill={PAPER} />
-        <path d="M380 950 H900" stroke={PAPER} strokeWidth="6" strokeDasharray="30 30" opacity="0.8" />
-        <text x="390" y="1020" fontFamily="IBM Plex Mono, monospace" fontSize="17" fill={INK}>
-          A refrigerated truck held at the Marrow Creek gate, 12:31 a.m.
+        <g clipPath={`url(#ph${u})`}>
+          <rect x="380" y="610" width="520" height="380" fill={`url(#hL${u})`} opacity="0.12" />
+          <path d="M380 700 H900" stroke={PAPER} strokeWidth="2" opacity="0.3" />
+          {Array.from({ length: 6 }, (_, i) => (
+            <rect key={i} x={392 + i * 96} y={690} width="5" height="300" fill="#2b2f35" />
+          ))}
+          <path d="M380 958 H900" stroke={PAPER} strokeWidth="8" strokeDasharray="26 26" opacity="0.85" />
+          <BoxTruck x={640} y={840} k={0.42} u={u} />
+        </g>
+        <text x="390" y="1018" fontFamily="IBM Plex Mono, monospace" fontSize="16" fill={INK}>
+          Convoy HL-7, held at Gate 1, 12:31 a.m.
         </text>
-        {lines(930, 620, 290, 17, 7)}
-        {lines(380, 1060, 410, 15, 11)}
-        {lines(820, 1060, 400, 15, 13)}
-        <text x="930" y="1018" fontFamily="IBM Plex Sans, sans-serif" fontWeight="700" fontSize="24" fill={INK}>
+        <text x="930" y="606" fontFamily="IBM Plex Sans, sans-serif" fontWeight="700" fontSize="22" fill={INK}>
           A scientist&apos;s letter, A6
         </text>
+        {lines(930, 640, 290, 16, 7)}
+        {lines(380, 1060, 410, 15, 11)}
+        {lines(820, 1060, 400, 15, 13)}
       </g>
       {/* coffee */}
       <g transform="translate(1270 1290)">
@@ -264,16 +276,17 @@ export function MirrorScene() {
       <path d={forest(139, 900, 1700, 1010, 180, 380, 60)} fill="#040506" />
       <Glow u={u} cx={800} cy={1180} r={420} k={0.5} />
       {/* windshield frame and dash */}
-      <path d="M0 0 L1600 0 L1600 260 C1200 200 400 200 0 260Z" fill="#030405" />
+      <path d="M0 0 L1600 0 L1600 380 C1200 320 400 320 0 380Z" fill="#030405" />
       <path d="M0 1280 C400 1220 1200 1220 1600 1280 L1600 1600 L0 1600Z" fill="#030405" />
-      <path d="M0 260 L180 1300 L0 1300Z M1600 260 L1420 1300 L1600 1300Z" fill="#030405" />
+      <path d="M0 380 L180 1300 L0 1300Z M1600 380 L1420 1300 L1600 1300Z" fill="#030405" />
       <g transform="translate(560 1330)">
         <circle cx="0" cy="0" r="80" fill="none" stroke={PAPER} strokeWidth="4" opacity="0.35" />
         <path d="M0 0 L50 -40" stroke={RED} strokeWidth="6" />
         <circle cx="480" cy="0" r="80" fill="none" stroke={PAPER} strokeWidth="4" opacity="0.35" />
         <path d="M480 0 L436 -46" stroke={PAPER} strokeWidth="6" opacity="0.7" />
       </g>
-      {/* the mirror */}
+      {/* the mirror, inside the centre-safe band */}
+      <g transform="translate(0 150)">
       <rect x="790" y="240" width="20" height="70" fill="#05070a" />
       <rect x="508" y="288" width="584" height="214" rx="48" fill="#05070a" />
       <g clipPath={`url(#mir${u})`}>
@@ -286,6 +299,7 @@ export function MirrorScene() {
         <Glow u={u} cx={860} cy={410} r={90} />
       </g>
       <rect x="520" y="300" width="560" height="190" rx="40" fill="none" stroke={PAPER} strokeWidth="3" opacity="0.25" />
+      </g>
     </svg>
   );
 }
@@ -353,28 +367,33 @@ export function InterceptScene() {
       <path d="M700 900 L900 900 L1600 1500 L0 1500Z" fill="#12161b" />
       <rect y="900" width="1600" height="700" fill={`url(#hS${u})`} opacity="0.18" />
       {/* the truck, from behind, stopped */}
-      <g transform="translate(800 1000)">
+      <g transform="translate(640 1000)">
         <rect x="-170" y="-200" width="340" height="250" fill="#1a1f26" />
         <path d="M-170 -200 H170 M0 -200 V50" stroke="#0b0e12" strokeWidth="6" />
         <rect x="-150" y="30" width="40" height="22" fill={RED} />
         <rect x="110" y="30" width="40" height="22" fill={RED} />
-        <Glow u={u} cx={670} cy={1041} r={80} k={0.6} />
-        <Glow u={u} cx={930} cy={1041} r={80} k={0.6} />
+        <Glow u={u} cx={-130} cy={41} r={80} k={0.6} />
+        <Glow u={u} cx={130} cy={41} r={80} k={0.6} />
         <rect x="-60" y="60" width="120" height="16" fill={PAPER} opacity="0.8" />
       </g>
-      {/* a sedan across the road ahead, hazards on */}
-      <g transform="translate(1040 900)">
-        <path d="M-160 20 L-130 -30 L120 -30 L160 20 L160 60 L-160 60Z" fill="#05070a" />
-        <rect x="-150" y="10" width="26" height="14" fill="#e7c07a" className="beacon" />
-        <rect x="124" y="10" width="26" height="14" fill="#e7c07a" className="beacon" />
+      {/* a sedan stopped across the shoulder ahead, hazards on */}
+      <g transform="translate(1000 905) scale(0.62)">
+        <path d="M-170 20 L-136 -34 L126 -34 L170 20 L170 66 L-170 66Z" fill="#05070a" />
+        <path d="M-120 -30 L-96 -78 L90 -78 L112 -30Z" fill="#0b0e12" />
+        <circle cx="-110" cy="70" r="26" fill="#05070a" stroke="#1a1f26" strokeWidth="6" />
+        <circle cx="110" cy="70" r="26" fill="#05070a" stroke="#1a1f26" strokeWidth="6" />
+        <rect x="-168" y="2" width="30" height="18" fill="#e7c07a" className="beacon" />
+        <rect x="138" y="2" width="30" height="18" fill="#e7c07a" className="beacon" />
       </g>
-      {/* figures in the headlights */}
+      <Glow u={u} cx={905} cy={912} r={70} k={0.7} />
+      <Glow u={u} cx={1095} cy={912} r={70} k={0.7} />
+      {/* two figures walking back toward the truck's cab */}
       <g fill="#05070a">
-        {[1180, 1260].map((x, i) => (
-          <g key={i} transform={`translate(${x} 960)`}>
-            <circle cx="0" cy="-110" r="16" />
-            <path d="M-26 -90 L26 -90 L32 20 L-32 20Z" />
-            <path d="M-20 20 L-14 90 L-2 90 L0 30 L2 90 L14 90 L20 20Z" />
+        {[852, 912].map((x, i) => (
+          <g key={i} transform={`translate(${x} ${1000 + i * 6}) scale(0.9)`}>
+            <circle cx="0" cy="-118" r="17" />
+            <path d="M-27 -96 L27 -96 L33 18 L-33 18Z" />
+            <path d="M-21 18 L-15 92 L-3 92 L0 32 L3 92 L15 92 L21 18Z" />
           </g>
         ))}
       </g>

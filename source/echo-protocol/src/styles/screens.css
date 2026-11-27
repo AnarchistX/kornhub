@@ -676,3 +676,97 @@
   letter-spacing: 0.4em;
   color: var(--red);
 }
+
+/* ============================================================ endings */
+.ending-screen {
+  place-items: start center;
+}
+.ending-inner {
+  display: grid;
+  gap: 26px;
+  width: min(640px, 100%);
+  padding: 4vh 0 2vh;
+}
+.ending-screen .letter {
+  justify-self: center;
+}
+.epilogue h2 {
+  margin: 0 0 4px;
+}
+.epilogue .kicker {
+  margin: 0 0 18px;
+  font: 600 13px var(--f-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+.epilogue p {
+  animation: ep-in 0.9s ease both;
+}
+@keyframes ep-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.fates {
+  display: grid;
+  gap: 10px;
+  margin: 22px 0 0;
+  padding: 18px 0 0;
+  border-top: 1px solid rgba(233, 223, 200, 0.2);
+}
+.fates div {
+  display: grid;
+  grid-template-columns: minmax(120px, 34%) 1fr;
+  gap: 12px;
+}
+.fates dt {
+  font: 700 12px/1.5 var(--f-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-hi);
+}
+.fates dd {
+  margin: 0;
+  font: 400 14.5px/1.5 var(--f-doc);
+  color: rgba(233, 223, 200, 0.8);
+}
+.ending-meta .stats {
+  font: 500 12.5px/1.6 var(--f-mono);
+  color: rgba(233, 223, 200, 0.6);
+}
+.found span {
+  font: 700 11px var(--f-mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(233, 223, 200, 0.55);
+}
+.found ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.found li {
+  padding: 4px 9px;
+  border: 1px solid rgba(233, 223, 200, 0.2);
+  font: 600 12px var(--f-mono);
+  color: rgba(233, 223, 200, 0.35);
+}
+.found li.on {
+  color: var(--paper);
+  border-color: rgba(233, 223, 200, 0.5);
+}
+.found li.now {
+  border-color: var(--red);
+  color: var(--paper-hi);
+}
+@media (max-width: 600px) {
+  .fates div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}

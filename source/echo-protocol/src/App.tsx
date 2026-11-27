@@ -15,6 +15,7 @@ import { Boot } from './screens/Boot';
 import { Report } from './screens/Report';
 import { Ending, ToBeContinued } from './screens/End';
 import { CutscenePlayer } from './cutscene/Cutscene';
+import { resolveEnding, roll } from './content/rollover';
 
 function Screen() {
   const title = useUi((u) => u.title);
@@ -45,7 +46,7 @@ function Screen() {
 function DebugOverlay() {
   const s = useGame((x) => x);
   return (
-    <pre style={{ position: 'fixed', left: 4, bottom: 4, zIndex: 9999, margin: 0, padding: 6, maxWidth: 360, font: '11px monospace', background: 'rgba(0,0,0,.7)', color: '#7f7', pointerEvents: 'none' }}>
+    <pre className="debug-overlay" style={{ position: 'fixed', left: 4, bottom: 4, zIndex: 9999, margin: 0, padding: 6, maxWidth: 360, font: '11px monospace', background: 'rgba(0,0,0,.7)', color: '#7f7', pointerEvents: 'none' }}>
       {JSON.stringify({ screen: s.screen, minute: s.night.minute, arrived: s.night.arrived.length, errors: s.night.errors, writeups: s.writeups, suspicion: s.suspicion, flags: s.flags }, null, 1)}
     </pre>
   );
@@ -59,6 +60,8 @@ if (DEBUG && typeof window !== 'undefined') {
     },
     state: () => getState(),
     board: () => CASES.map((c) => ({ id: c.id, title: c.title, questions: c.questions.map((q) => ({ id: q.id, answers: q.slots.map((x) => x.answer) })) })),
+    roll: () => roll(getState()),
+    ending: () => resolveEnding(getState()),
   };
 }
 

@@ -48,9 +48,10 @@ function Truck() {
       <path d="M196 118 L228 118 L238 136 L196 136Z" fill={G1} />
       <circle cx="78" cy="184" r="13" fill={G1} stroke={G3} strokeWidth="2" />
       <circle cx="214" cy="184" r="13" fill={G1} stroke={G3} strokeWidth="2" />
-      <circle cx="243" cy="160" r="9" fill="#e9efe6" />
-      <circle cx="243" cy="160" r="26" fill="#e9efe6" opacity="0.22" />
-      <circle cx="243" cy="160" r="48" fill="#e9efe6" opacity="0.08" />
+      <circle cx="243" cy="158" r="6" fill="#e9efe6" />
+      <circle cx="243" cy="172" r="4" fill="#c9d0c6" />
+      <circle cx="243" cy="160" r="16" fill="#e9efe6" opacity="0.2" />
+      <circle cx="243" cy="160" r="30" fill="#e9efe6" opacity="0.07" />
       <path d="M36 172 q-10 -18 2 -30 q12 -12 -2 -28" stroke={G3} strokeWidth="6" fill="none" opacity="0.35" strokeLinecap="round" />
     </g>
   );

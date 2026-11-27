@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
-import { restartNight, useGame } from '../engine/store';
+import { canRestartFrom, getState, restartFrom, restartNight, useGame } from '../engine/store';
+import { foundEndings } from '../engine/persist';
+import { epilogue } from '../content/endings';
+import { ENDINGS, ENDING_NAMES } from '../content/rollover';
 import { audio } from '../engine/audio';
 import { resetUi, setUi } from '../os/ui';
 
@@ -80,14 +83,30 @@ export function ToBeContinued() {
 export function Ending() {
   const ending = useGame((s) => s.ending);
   const profile = useGame((s) => s.profile);
+  const state = getState();
+  const found = foundEndings();
+  const ep = ending && ending !== 'detained' && ending !== 'terminated' ? epilogue(ending, state) : null;
+  const reports = state.reports;
+  const correct = reports.reduce((a, r) => a + r.correct, 0);
+  const counted = reports.reduce((a, r) => a + r.counted, 0);
+  const solved = (state.solved ?? []).length;
+  const finale = state.night.n === 10;
   useEffect(() => {
-    audio.setAmbience('none');
-    audio.setTension(0);
+    audio.setAmbience(ep ? 'wind' : 'none');
+    audio.setTension(ending === 'echo' ? 0.6 : 0);
     audio.play('thunk');
-  }, []);
+  }, [ep, ending]);
+
+  const again = (fn: () => void) => () => {
+    audio.play('click');
+    fn();
+    resetUi();
+    setUi({ title: false });
+  };
+
   return (
-    <div className="tbc">
-      <div style={{ display: 'grid', gap: 22, justifyItems: 'center' }}>
+    <div className="tbc ending-screen">
+      <div className="ending-inner">
         {ending === 'detained' && (
           <article className="letter paper">
             <h3>FEDERAL BUREAU OF INVESTIGATION · NOTICE OF DETENTION</h3>
@@ -122,29 +141,69 @@ export function Ending() {
             </span>
           </article>
         )}
-        <nav className="menu" style={{ justifyItems: 'center' }}>
-          <button
-            className="ghost"
-            onClick={() => {
-              audio.play('click');
-              restartNight();
-              resetUi();
-              setUi({ title: false });
-            }}
-          >
-            Restart the night
-          </button>
-          <button
-            className="ghost"
-            onClick={() => {
-              audio.play('click');
-              resetUi();
-              setUi({ title: true });
-            }}
-          >
-            Title
-          </button>
-        </nav>
+        {ep && (
+          <section className="epilogue">
+            <span className="classif">ENDING · {ep.name.toUpperCase()}</span>
+            <h2>{ep.name}</h2>
+            <p className="kicker">{ep.kicker}</p>
+            {ep.lines.map((l, i) => (
+              <p key={i} style={{ animationDelay: `${0.4 + i * 0.5}s` }}>
+                {l}
+              </p>
+            ))}
+            {ep.fates.length > 0 && (
+              <dl className="fates">
+                {ep.fates.map(([who, what]) => (
+                  <div key={who}>
+                    <dt>{who}</dt>
+                    <dd>{what}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </section>
+        )}
+        <section className="ending-meta">
+          {profile && (
+            <p className="stats">
+              {profile.first} {profile.last} · {state.night.n} night{state.night.n > 1 ? 's' : ''} at Marrow Creek · {correct}/{counted} decisions by the book · {solved}/5 case
+              files · suspicion {Math.round(state.suspicion)}
+            </p>
+          )}
+          <div className="found" aria-label="Endings found on this device">
+            <span>Endings found · {found.length} of {ENDINGS.length}</span>
+            <ul>
+              {ENDINGS.map((id) => (
+                <li key={id} className={`${found.includes(id) ? 'on' : ''} ${id === ending ? 'now' : ''}`}>
+                  {found.includes(id) ? ENDING_NAMES[id] : '? ? ?'}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <nav className="menu">
+            <button className="ghost" onClick={again(restartNight)}>
+              {finale ? 'Replay the finale' : 'Restart the night'}
+            </button>
+            {finale && canRestartFrom(9) && (
+              <button className="ghost" onClick={again(() => restartFrom(9))}>
+                Choose again (Night 9)
+              </button>
+            )}
+            <button
+              className="ghost"
+              onClick={() => {
+                audio.play('click');
+                resetUi();
+                setUi({ title: true });
+              }}
+            >
+              Title
+            </button>
+            <a className="ghost" href="/" style={{ textDecoration: 'none' }}>
+              KXRNAGE
+            </a>
+          </nav>
+        </section>
       </div>
     </div>
   );
