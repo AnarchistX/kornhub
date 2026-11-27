@@ -788,9 +788,13 @@ button:disabled {
   position: relative;
   width: 100%;
   max-width: 380px;
-  aspect-ratio: 4 / 3;
   border-radius: 20px;
   background: radial-gradient(70% 70% at 55% 55%, rgba(255, 255, 255, 0.07), transparent 70%);
+}
+.runner-preview::before {
+  content: '';
+  display: block;
+  padding-top: 75%; /* 4:3, without aspect-ratio for older Safari */
 }
 .runner-preview canvas {
   position: absolute;
