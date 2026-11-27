@@ -73,8 +73,6 @@ export function TitleScreen() {
       </div>
       <div className="title-foot">
         MARROW CREEK · 1999
-        <br />
-        TEN NIGHTS · THREE ACTS · NINE ENDINGS
       </div>
       {settings && (
         <div className="scrim" onClick={() => setSettingsOpen(false)}>

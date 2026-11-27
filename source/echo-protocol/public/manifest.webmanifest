@@ -1,7 +1,7 @@
 {
   "name": "Echo Protocol",
   "short_name": "Echo Protocol",
-  "description": "Night shift at a federal lab, December 1999. Ten nights, three acts, nine endings.",
+  "description": "Night shift at a federal lab, December 1999. Something on B3 is still logging in.",
   "start_url": "/echo_protocol/",
   "scope": "/echo_protocol/",
   "display": "fullscreen",
