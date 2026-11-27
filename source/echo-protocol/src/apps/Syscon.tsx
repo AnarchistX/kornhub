@@ -124,7 +124,9 @@ export function SysconApp({ compact }: { compact: boolean }) {
         <div className="sc-alarm top" role="alert">
           <div>
             <b>REMOTE OVERRIDE · GATE 1</b>
-            <span>svc_gate @ WAR-ROOM-03 · accepted automatically at {hhmm(r.ovAt + GRACE)}</span>
+            <span>
+              <span className="src">svc_gate @ WAR-ROOM-03 · </span>opens by itself at {hhmm(r.ovAt + GRACE)}
+            </span>
           </div>
           <button className="btn big deny" onClick={() => act(denyOverride(getState()), `override ${r.ov} DENIED from OPS-NOC-01`, 'stamp')}>
             <span>Deny</span>
@@ -240,9 +242,7 @@ function JobPanel({ r, minute, me, act }: { r: Roll; minute: number; me: string;
         <Row k="OWNER" v="Office of the Deputy Director" />
         <Row k="WINDOW" v="12/31/99 23:50–00:10 · CAB-1299-03" />
         <Row k="RELEASED" v="12/08/99 · Night Operations" />
-        <pre className="sc-cmd">
-          RUN \\RECSYS\ARCHIVE\*.* /{r.mode} /UNATTENDED
-        </pre>
+        <pre className="sc-cmd">RUN \\RECSYS\ARCHIVE\*.* /{r.mode} /UNATTENDED</pre>
         <Row k="STATUS" v={status[0]} tone={status[1] as Lamp} />
       </article>
       {armed ? (
@@ -302,61 +302,80 @@ function HvacPanel({ r, minute, say }: { r: Roll; minute: number; say: (l: strin
   const pct = Math.max(0, Math.min(100, ((pa + 50) / 50) * 100));
   return (
     <div className="sc-panel hvac">
-      <svg className="pid" viewBox="0 0 360 200" role="img" aria-label="B3 air handling schematic">
-        <rect width="360" height="200" fill="#0b1310" />
-        {/* ducts */}
-        <path d="M14 60 H70 M14 140 H70" stroke="#3b4a42" strokeWidth="10" />
-        <path d="M130 60 H190 V96 M130 140 H160 M200 140 H190 V104 M190 100 H262" stroke={r.ahu1 === 'isolated' ? '#3b4a42' : '#3b4a42'} strokeWidth="10" fill="none" />
-        <path d="M130 60 H190 V100 H262" stroke={r.ahu1 === 'run' ? '#5fd17a' : r.ahu1 === 'fault' ? '#c23b22' : '#26302b'} strokeWidth="3" fill="none" />
-        <path d="M130 140 H160" stroke={r.ahu2 === 'run' ? '#5fd17a' : '#26302b'} strokeWidth="3" />
-        <path d="M200 140 H190 V100 H262" stroke={r.ahu2 === 'run' && r.d2 === 'open' ? '#5fd17a' : '#26302b'} strokeWidth="3" fill="none" />
-        {/* AHU-1 */}
-        <g transform="translate(70 36)">
-          <rect width="60" height="48" fill="#16201a" stroke={r.ahu1 === 'fault' ? '#c23b22' : '#59605b'} strokeWidth="2" />
-          <circle cx="30" cy="24" r="14" fill="none" stroke={r.ahu1 === 'run' ? '#5fd17a' : r.ahu1 === 'fault' ? '#c23b22' : '#3b4a42'} strokeWidth="2" />
-          <g className={r.ahu1 === 'run' ? 'fan spin' : 'fan'} style={{ transformOrigin: '30px 24px' }}>
-            <path d="M30 24 L30 12 M30 24 L40 30 M30 24 L20 30" stroke={r.ahu1 === 'run' ? '#5fd17a' : '#3b4a42'} strokeWidth="3" />
+      <div className="sc-hvac-view">
+        <svg className="pid" viewBox="0 0 360 200" role="img" aria-label="B3 air handling schematic">
+          <rect width="360" height="200" fill="#0b1310" />
+          {/* ducts */}
+          <path d="M14 60 H70 M14 140 H70" stroke="#3b4a42" strokeWidth="10" />
+          <path d="M130 60 H190 V96 M130 140 H160 M200 140 H190 V104 M190 100 H262" stroke={r.ahu1 === 'isolated' ? '#3b4a42' : '#3b4a42'} strokeWidth="10" fill="none" />
+          <path d="M130 60 H190 V100 H262" stroke={r.ahu1 === 'run' ? '#5fd17a' : r.ahu1 === 'fault' ? '#c23b22' : '#26302b'} strokeWidth="3" fill="none" />
+          <path d="M130 140 H160" stroke={r.ahu2 === 'run' ? '#5fd17a' : '#26302b'} strokeWidth="3" />
+          <path d="M200 140 H190 V100 H262" stroke={r.ahu2 === 'run' && r.d2 === 'open' ? '#5fd17a' : '#26302b'} strokeWidth="3" fill="none" />
+          {/* AHU-1 */}
+          <g transform="translate(70 36)">
+            <rect width="60" height="48" fill="#16201a" stroke={r.ahu1 === 'fault' ? '#c23b22' : '#59605b'} strokeWidth="2" />
+            <circle cx="30" cy="24" r="14" fill="none" stroke={r.ahu1 === 'run' ? '#5fd17a' : r.ahu1 === 'fault' ? '#c23b22' : '#3b4a42'} strokeWidth="2" />
+            <g className={r.ahu1 === 'run' ? 'fan spin' : 'fan'} style={{ transformOrigin: '30px 24px' }}>
+              <path d="M30 24 L30 12 M30 24 L40 30 M30 24 L20 30" stroke={r.ahu1 === 'run' ? '#5fd17a' : '#3b4a42'} strokeWidth="3" />
+            </g>
+            {r.ahu1 === 'fault' && <path d="M14 8 L46 40 M46 8 L14 40" stroke="#c23b22" strokeWidth="3" />}
+            <text x="30" y="62" textAnchor="middle" className="pid-t">
+              AHU-1 · {r.ahu1.toUpperCase()}
+            </text>
           </g>
-          {r.ahu1 === 'fault' && <path d="M14 8 L46 40 M46 8 L14 40" stroke="#c23b22" strokeWidth="3" />}
-          <text x="30" y="62" textAnchor="middle" className="pid-t">AHU-1 · {r.ahu1.toUpperCase()}</text>
-        </g>
-        {/* AHU-2 */}
-        <g transform="translate(70 116)">
-          <rect width="60" height="48" fill="#16201a" stroke="#59605b" strokeWidth="2" />
-          <circle cx="30" cy="24" r="14" fill="none" stroke={r.ahu2 === 'run' ? '#5fd17a' : '#3b4a42'} strokeWidth="2" />
-          <g className={r.ahu2 === 'run' ? 'fan spin' : 'fan'} style={{ transformOrigin: '30px 24px' }}>
-            <path d="M30 24 L30 12 M30 24 L40 30 M30 24 L20 30" stroke={r.ahu2 === 'run' ? '#5fd17a' : '#3b4a42'} strokeWidth="3" />
+          {/* AHU-2 */}
+          <g transform="translate(70 116)">
+            <rect width="60" height="48" fill="#16201a" stroke="#59605b" strokeWidth="2" />
+            <circle cx="30" cy="24" r="14" fill="none" stroke={r.ahu2 === 'run' ? '#5fd17a' : '#3b4a42'} strokeWidth="2" />
+            <g className={r.ahu2 === 'run' ? 'fan spin' : 'fan'} style={{ transformOrigin: '30px 24px' }}>
+              <path d="M30 24 L30 12 M30 24 L40 30 M30 24 L20 30" stroke={r.ahu2 === 'run' ? '#5fd17a' : '#3b4a42'} strokeWidth="3" />
+            </g>
+            <text x="30" y="62" textAnchor="middle" className="pid-t">
+              AHU-2 · {r.ahu2.toUpperCase()}
+            </text>
           </g>
-          <text x="30" y="62" textAnchor="middle" className="pid-t">AHU-2 · {r.ahu2.toUpperCase()}</text>
-        </g>
-        {/* damper D-2 */}
-        <g transform="translate(180 140)">
-          <circle r="11" fill="#0b1310" stroke="#a7aea6" strokeWidth="2" />
-          <path d={r.d2 === 'open' ? 'M-9 0 H9' : 'M0 -9 V9'} stroke={r.d2 === 'open' ? '#5fd17a' : '#ffb547'} strokeWidth="3" />
-          <text y="26" textAnchor="middle" className="pid-t">D-2 · {r.d2.toUpperCase()}</text>
-        </g>
-        {/* B3 */}
-        <g transform="translate(262 52)">
-          <rect width="88" height="100" fill="#16201a" stroke={tone === 'bad' ? '#c23b22' : tone === 'warn' ? '#ffb547' : '#5fd17a'} strokeWidth="2" />
-          <text x="44" y="16" textAnchor="middle" className="pid-t">B3</text>
-          <text x="44" y="27" textAnchor="middle" className="pid-t">CONTAINMENT</text>
-          <text x="44" y="66" textAnchor="middle" className={`pid-pa ${tone}`}>
-            {pa}
+          {/* damper D-2 */}
+          <g transform="translate(180 140)">
+            <circle r="11" fill="#0b1310" stroke="#a7aea6" strokeWidth="2" />
+            <path d={r.d2 === 'open' ? 'M-9 0 H9' : 'M0 -9 V9'} stroke={r.d2 === 'open' ? '#5fd17a' : '#ffb547'} strokeWidth="3" />
+            <text y="26" textAnchor="middle" className="pid-t">
+              D-2 · {r.d2.toUpperCase()}
+            </text>
+          </g>
+          {/* B3 */}
+          <g transform="translate(262 52)">
+            <rect width="88" height="100" fill="#16201a" stroke={tone === 'bad' ? '#c23b22' : tone === 'warn' ? '#ffb547' : '#5fd17a'} strokeWidth="2" />
+            <text x="44" y="16" textAnchor="middle" className="pid-t">
+              B3
+            </text>
+            <text x="44" y="27" textAnchor="middle" className="pid-t">
+              CONTAINMENT
+            </text>
+            <text x="44" y="66" textAnchor="middle" className={`pid-pa ${tone}`}>
+              {pa}
+            </text>
+            <text x="44" y="86" textAnchor="middle" className="pid-t">
+              Pa
+            </text>
+          </g>
+          <text x="14" y="190" className="pid-t">
+            OUTSIDE AIR
           </text>
-          <text x="44" y="86" textAnchor="middle" className="pid-t">Pa</text>
-        </g>
-        <text x="14" y="190" className="pid-t">OUTSIDE AIR</text>
-        <text x="346" y="190" textAnchor="end" className="pid-t">
-          {minute >= T.rollover ? '01/01/1900 ← AHU-1 CLOCK' : 'HVAC-CTL 4.1'}
-        </text>
-      </svg>
-      <div className="sc-meter" aria-label={`B3 differential pressure ${pa} pascals`}>
-        <div className="fill" style={{ width: `${pct}%` }} data-tone={tone} />
-        <span style={{ left: `${((PA_WARN + 50) / 50) * 100}%` }}>−15</span>
-        <span style={{ left: '100%' }}>0 · LOST</span>
+          <text x="346" y="190" textAnchor="end" className="pid-t">
+            {minute >= T.rollover ? '01/01/1900 ← AHU-1 CLOCK' : 'HVAC-CTL 4.1'}
+          </text>
+        </svg>
+        <div className={`sc-pa ${tone}`}>
+          B3 <b>{pa} Pa</b> · {r.hvac === 'ok' ? 'normal' : r.hvac === 'stable' ? 'holding on AHU-2' : r.hvac === 'lost' ? 'CONTAINMENT LOST' : 'rising'}
+        </div>
+        <div className="sc-meter" aria-label={`B3 differential pressure ${pa} pascals`}>
+          <div className="fill" style={{ width: `${pct}%` }} data-tone={tone} />
+          <span style={{ left: `${((PA_WARN + 50) / 50) * 100}%` }}>−15</span>
+          <span style={{ left: '100%' }}>0 · LOST</span>
+        </div>
+        {locked && <p className="sc-note">HVAC-CTL is locked by the change freeze. Manual control unlocks on a fault.</p>}
+        {r.hvac === 'stable' && <p className="sc-note ok">B3 is on AHU-2. Pressure holding.</p>}
       </div>
-      {locked && <p className="sc-note">HVAC-CTL is locked by the change freeze. Manual control unlocks on a fault.</p>}
-      {r.hvac === 'stable' && <p className="sc-note ok">B3 is on AHU-2. Pressure holding.</p>}
       <div className="sc-hvac">
         {(
           [
@@ -447,10 +466,30 @@ function SessionsPanel({ r, me, say }: { r: Roll; me: string; say: (l: string) =
 
 // ------------------------------------------------------------------ fax
 
-const RECIPIENTS: { id: 'fbi' | 'press' | 'lantern'; label: string; detail: string; when: (f: Record<string, unknown>) => boolean }[] = [
-  { id: 'fbi', label: 'FBI · Special Agent Ruth Calloway', detail: '(412) 555-0193 · Pittsburgh Field Office', when: (f) => !!f.fbi_contact },
-  { id: 'press', label: 'The Washington Ledger · Simon Hale', detail: '(202) 555-0148 · newsroom', when: (f) => !!f.reyes_press },
-  { id: 'lantern', label: 'LANTERN', detail: '+43 1 · relay, Vienna', when: () => true },
+const RECIPIENTS: {
+  id: 'fbi' | 'press' | 'lantern';
+  label: string;
+  detail: string;
+  when: (f: Record<string, unknown>) => boolean;
+}[] = [
+  {
+    id: 'fbi',
+    label: 'FBI · Special Agent Ruth Calloway',
+    detail: '(412) 555-0193 · Pittsburgh Field Office',
+    when: (f) => !!f.fbi_contact,
+  },
+  {
+    id: 'press',
+    label: 'The Washington Ledger · Simon Hale',
+    detail: '(202) 555-0148 · newsroom',
+    when: (f) => !!f.reyes_press,
+  },
+  {
+    id: 'lantern',
+    label: 'LANTERN',
+    detail: '+43 1 · relay, Vienna',
+    when: () => true,
+  },
 ];
 
 function FaxPanel({ r, minute, say }: { r: Roll; minute: number; say: (l: string) => void }) {
@@ -459,7 +498,12 @@ function FaxPanel({ r, minute, say }: { r: Roll; minute: number; say: (l: string
   const solved = useGame((s) => (s.solved ?? []).length);
   const [to, setTo] = useState<'fbi' | 'press' | 'lantern' | null>(null);
   const open = faxOpen(getState());
-  const records = r.job === 'held' || r.job === 'rehearsed' ? 'RECSYS archive · 4,113 records (the manifests, the sensor logs, the work orders)' : r.job === 'armed' ? 'RECSYS archive · still on the server' : 'RECSYS archive · nothing left to send';
+  const records =
+    r.job === 'held' || r.job === 'rehearsed'
+      ? 'RECSYS archive · 4,113 records (the manifests, the sensor logs, the work orders)'
+      : r.job === 'armed'
+        ? 'RECSYS archive · still on the server'
+        : 'RECSYS archive · nothing left to send';
   const sentTo = RECIPIENTS.find((x) => x.id === r.fax);
   return (
     <div className="sc-panel fax">
@@ -495,13 +539,18 @@ function FaxPanel({ r, minute, say }: { r: Roll; minute: number; say: (l: string
               disabled={!to}
               onClick={() =>
                 to &&
-                confirmDialog('Send fax', `Send everything to ${RECIPIENTS.find((x) => x.id === to)?.label}?\n\nThere is one line and one night. You can send it once.`, 'Send', () => {
-                  const e = sendFax(getState(), to);
-                  if (!e) return;
-                  applyEffect(e);
-                  audio.play('printer');
-                  say(`FAX · dialing… connected · ${notes + solved + 3} pages sent`);
-                })
+                confirmDialog(
+                  'Send fax',
+                  `Send everything to ${RECIPIENTS.find((x) => x.id === to)?.label}?\n\nThere is one line and one night. You can send it once.`,
+                  'Send',
+                  () => {
+                    const e = sendFax(getState(), to);
+                    if (!e) return;
+                    applyEffect(e);
+                    audio.play('printer');
+                    say(`FAX · dialing… connected · ${notes + solved + 3} pages sent`);
+                  },
+                )
               }
             >
               <span>Send</span>

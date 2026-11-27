@@ -107,7 +107,7 @@ function CallWindow({ call }: { call: CallDef }) {
           <span className="t">Secure VTC · {live ? 'Connected' : 'Incoming call'}</span>
         </div>
         <div className="vtc-body">
-          <div className={`vtc-feed ${live ? 'on' : 'ringing'}`}>
+          <div className={`vtc-feed ${live ? 'on' : 'ringing'} ${voiceOnly ? 'voice' : 'video'}`}>
             {caller && !voiceOnly && (
               <div className="vtc-face">
                 <Portrait spec={caller.photo} title={name} talking={live && !done} />

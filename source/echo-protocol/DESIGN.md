@@ -408,7 +408,13 @@ safe-area aware. Desktop gets draggable windows.
 5. **M5 (done):** Act III Rollover: SYSCON (gate overrides, 0047 switches,
    B3 failover, sessions, fax), Night 10 and every ending with its own
    cutscene and epilogue, endings found, replays from the finale or Night 9.
-6. **M6:** Music integration once the tracks exist; a polish pass from playtests.
+6. **M6 (launch, done):** live on kxrnage.com. App icons, web manifest and a
+   share card (`public/`), windows stay on screen after a resize, a
+   rotate-to-portrait nudge for phones held sideways (the clock waits), SYSCON
+   puts the midnight controls first on small phones, call captions on a
+   lower-third band, a short tap guard so Skip can't land on a choice.
+7. **M7:** Music integration once the tracks exist; tuning from real playtests
+   (finale timing, case-file difficulty).
 
 ## 11. Clue ledger
 

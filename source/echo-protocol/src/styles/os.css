@@ -573,3 +573,58 @@
   width: 23px;
   height: 23px;
 }
+
+/* ------------------------------------------------------------ rotate hint (phones held sideways) */
+.rotate-hint {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: calc(16px + var(--safe-t)) calc(24px + var(--safe-r)) calc(16px + var(--safe-b)) calc(24px + var(--safe-l));
+  background: rgba(15, 18, 22, 0.96);
+  color: var(--paper);
+  text-align: center;
+}
+.rotate-hint p {
+  margin: 6px 0 0;
+  font: 700 18px var(--f-mono);
+  letter-spacing: 0.04em;
+}
+.rotate-hint small {
+  font: 400 14px var(--f-doc);
+  color: rgba(233, 223, 200, 0.7);
+}
+.rotate-hint .ghost {
+  margin-top: 6px;
+}
+.rotate-phone {
+  width: 34px;
+  height: 58px;
+  border: 3px solid var(--paper);
+  border-radius: 7px;
+  position: relative;
+  animation: rotate-phone 2.4s ease-in-out infinite;
+}
+.rotate-phone span {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 8px;
+  height: 3px;
+  margin-left: -4px;
+  border-radius: 2px;
+  background: var(--paper);
+}
+@keyframes rotate-phone {
+  0%,
+  20% {
+    transform: rotate(-90deg);
+  }
+  55%,
+  100% {
+    transform: rotate(0deg);
+  }
+}

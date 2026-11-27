@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Win } from './ui';
 import { closeApp, focusApp, moveWin } from './ui';
 import { APP_ICONS, APP_NAMES } from '../art/icons';
@@ -13,15 +13,34 @@ interface Drag {
   h: number;
 }
 
+/** Desk size, so windows stay reachable after the browser shrinks or a tablet rotates. */
+function useDeskSize() {
+  const read = () => ({ W: window.innerWidth, H: window.innerHeight - 76 });
+  const [size, setSize] = useState(read);
+  useEffect(() => {
+    const on = () => setSize(read());
+    window.addEventListener('resize', on);
+    return () => window.removeEventListener('resize', on);
+  }, []);
+  return size;
+}
+
 export function Window({ win, active, children }: { win: Win; active: boolean; children: React.ReactNode }) {
   const drag = useRef<Drag | null>(null);
   const Icon = APP_ICONS[win.app];
+  const { W, H } = useDeskSize();
+  // Render inside the desk whatever the stored geometry says; dragging stores real values again.
+  const w = Math.max(320, Math.min(win.w, W - 16));
+  const h = Math.max(220, Math.min(win.h, H - 8));
+  // Same limits as dragging: at least 120px of the title bar stays on the desk.
+  const x = Math.max(-w + 120, Math.min(win.x, W - 120));
+  const y = Math.max(0, Math.min(win.y, H - 28));
 
   const down = (mode: Drag['mode']) => (e: React.PointerEvent) => {
     if (e.button !== 0) return;
     focusApp(win.app);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    drag.current = { mode, px: e.clientX, py: e.clientY, x: win.x, y: win.y, w: win.w, h: win.h };
+    drag.current = { mode, px: e.clientX, py: e.clientY, x, y, w, h };
   };
   const move = (e: React.PointerEvent) => {
     const d = drag.current;
@@ -50,7 +69,7 @@ export function Window({ win, active, children }: { win: Win; active: boolean; c
   return (
     <section
       className={`win ${active ? '' : 'blur'}`}
-      style={{ left: win.x, top: win.y, width: win.w, height: win.h, zIndex: win.z }}
+      style={{ left: x, top: y, width: w, height: h, zIndex: win.z }}
       onPointerDownCapture={() => focusApp(win.app)}
       aria-label={APP_NAMES[win.app]}
     >

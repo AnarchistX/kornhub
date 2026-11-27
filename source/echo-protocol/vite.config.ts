@@ -11,5 +11,6 @@ export default defineConfig({
     emptyOutDir: true,
     target: ['es2020', 'safari14'],
     assetsInlineLimit: 0,
+    chunkSizeWarningLimit: 700, // one ~160 KB (gzip) bundle is fine for a single-page game
   },
 });

@@ -980,6 +980,17 @@
     width: auto;
     height: 86%;
   }
+  /* Short phones: the caller's face moves right so the name and title never sit on it. */
+  .vtc-feed.video {
+    place-items: center end;
+    padding-right: 12px;
+  }
+  .vtc-osd {
+    font-size: 15px;
+  }
+  .vtc-osd b {
+    font-size: 17px;
+  }
 }
 
 /* ============================================================ backup terminal */
@@ -1823,4 +1834,113 @@
   font: inherit;
   color: inherit;
   cursor: pointer;
+}
+/* B3 HVAC: controls beside the schematic on a desk, a shorter schematic on phones,
+   so all three buttons are on screen during the midnight fault without scrolling. */
+.sc-hvac-view {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.syscon:not(.compact) .sc-panel.hvac {
+  grid-template-columns: minmax(0, 1.7fr) minmax(190px, 1fr);
+  align-items: start;
+}
+.syscon:not(.compact) .sc-hrow {
+  grid-template-columns: 1fr;
+  gap: 6px;
+  padding: 8px 10px 10px;
+}
+.syscon.compact .pid {
+  max-height: 170px;
+}
+.syscon.compact .sc-panel.hvac {
+  gap: 8px;
+  padding: 10px 12px;
+}
+.syscon.compact .sc-hrow {
+  padding: 4px 8px;
+}
+/* Small screens: the controls that matter at midnight come first. */
+.sc-pa {
+  display: none;
+  font: 600 13px var(--f-mono);
+  letter-spacing: 0.04em;
+  color: var(--sc-text);
+}
+.sc-pa b {
+  font: 400 22px var(--f-term);
+  color: var(--sc-ok);
+}
+.sc-pa.warn b {
+  color: var(--sc-warn);
+}
+.sc-pa.bad b {
+  color: var(--sc-bad);
+}
+.syscon.compact .sc-head {
+  padding: 4px 12px;
+}
+.syscon.compact .sc-brand {
+  display: none;
+}
+.syscon.compact .sc-count {
+  grid-auto-flow: column;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  justify-content: end;
+  font-size: 24px;
+}
+.syscon.compact .sc-alarm.top {
+  padding: 6px 8px 6px 10px;
+}
+.syscon.compact .sc-alarm.top b {
+  font-size: 12px;
+}
+.syscon.compact .sc-alarm .src {
+  display: none;
+}
+.syscon.compact .sc-alarm .btn.deny {
+  min-width: 92px;
+  min-height: 42px;
+}
+.syscon.compact .sc-hvac-view {
+  display: contents;
+}
+.syscon.compact .sc-pa {
+  display: block;
+  order: 0;
+}
+.syscon.compact .sc-meter {
+  order: 1;
+  margin-bottom: 12px;
+}
+.syscon.compact .sc-hvac-view .sc-note {
+  order: 2;
+}
+.syscon.compact .sc-hvac {
+  order: 3;
+  gap: 6px;
+}
+.syscon.compact .pid {
+  order: 4;
+}
+.syscon.compact .sc-hrow .btn {
+  min-height: 40px;
+}
+.syscon.compact .sc-log {
+  max-height: 30px;
+  padding: 4px 12px;
+}
+.syscon.compact .sc-log div:not(:first-child) {
+  display: none;
+}
+/* Calls: a broadcast-style band keeps the caller's name readable over their picture. */
+.vtc-osd.bottom {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 26px 10px 8px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.55) 60%, rgba(0, 0, 0, 0));
 }

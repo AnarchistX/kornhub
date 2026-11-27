@@ -19,6 +19,7 @@ import { CallPopup } from './Call';
 import { BoardApp } from '../apps/Board';
 import { SysconApp } from '../apps/Syscon';
 import { AppGuard } from './Crash';
+import { RotateHint, useRotateHint } from './Rotate';
 
 const ORDER: AppId[] = ['queue', 'directives', 'mail', 'logs', 'personnel', 'notes'];
 
@@ -84,7 +85,8 @@ export function Desktop() {
   const apps: AppId[] = [...ORDER, ...(terminal ? (['terminal'] as AppId[]) : []), ...(nightN >= 5 ? (['board'] as AppId[]) : []), ...(syscon ? (['syscon'] as AppId[]) : [])];
   const boardNew = useGame((s) => s.night.n >= 5 && !s.flags.board_seen);
 
-  useShiftClock(menu || !!confirm || !introDone);
+  const rotate = useRotateHint();
+  useShiftClock(menu || !!confirm || !introDone || rotate.show);
 
   useEffect(() => {
     audio.setAmbience('noc');
@@ -240,6 +242,7 @@ export function Desktop() {
       <IntroSticky />
       <NetSendPopup />
       <CallPopup />
+      {rotate.show && <RotateHint onDismiss={rotate.dismiss} />}
       <MenuDialog />
       <EndShift />
     </div>
