@@ -5,8 +5,7 @@ import { resetUi, setUi } from '../os/ui';
 
 export function ToBeContinued() {
   const profile = useGame((s) => s.profile);
-  const copied = useGame((s) => !!s.flags.n1_copied_log);
-  const saw = useGame((s) => !!s.flags.n1_saw_deceased);
+  const letter = useGame((s) => !!s.flags.n4_letter);
   useEffect(() => {
     audio.setAmbience('wind');
     audio.setTension(0.15);
@@ -14,16 +13,17 @@ export function ToBeContinued() {
   return (
     <div className="tbc">
       <div className="tbc-inner">
-        <span className="classif">END OF NIGHT 1</span>
-        <h2>To be continued</h2>
+        <span className="classif">END OF ACT I</span>
+        <h2>Night Shift</h2>
         <p>
-          {profile?.first}, you made it through your first night at Marrow Creek.{' '}
-          {saw ? 'You know whose badge opened that door. ' : 'You never looked up who badge 0417 belongs to. Maybe next time. '}
-          {copied ? 'And somewhere on that workstation, there is a copy of the log with your name on it.' : ''}
+          {profile?.first}, four nights at Marrow Creek.{' '}
+          {letter
+            ? "You have Paul Whitlock's letter, and the names in it."
+            : 'The tapes rotated before you could read whatever Paul Whitlock left behind.'}
         </p>
         <p>
-          Night 2 arrives in the next build: Y2K change requests, a call from Security, and a message from LANTERN that will not wait. Your progress is saved on this
-          device.
+          Act II, <b>Compartment</b>, arrives in the next build. The routine is about to break: Ray is about to disappear from the schedule, and LANTERN wants more
+          than your attention. Your progress is saved on this device.
         </p>
         <nav className="menu">
           <button
@@ -45,7 +45,7 @@ export function ToBeContinued() {
               setUi({ title: false });
             }}
           >
-            Replay Night 1
+            Replay Night 4
           </button>
           <a className="ghost" href="/" style={{ textDecoration: 'none' }}>
             KXRNAGE
@@ -67,6 +67,23 @@ export function Ending() {
   return (
     <div className="tbc">
       <div style={{ display: 'grid', gap: 22, justifyItems: 'center' }}>
+        {ending === 'detained' && (
+          <article className="letter paper">
+            <h3>FEDERAL BUREAU OF INVESTIGATION · NOTICE OF DETENTION</h3>
+            <p>
+              {profile ? `${profile.first} ${profile.last}` : 'Subject'} · Halvard-Lowe Technical Services · Badge 1187
+            </p>
+            <p>
+              You are being detained pending investigation of the unauthorized collection and retention of national defense information from a U.S. Government
+              information system (18 U.S.C. § 793).
+            </p>
+            <p>Your workstation, your notes and your personal storage have been seized. You may contact an attorney.</p>
+            <p style={{ marginTop: 24 }}>— Facility Security, on behalf of the Federal Bureau of Investigation</p>
+            <span className="stamp red" style={{ marginTop: 8 }}>
+              Detained
+            </span>
+          </article>
+        )}
         {ending === 'terminated' && (
           <article className="letter paper">
             <h3>NOTICE OF TERMINATION OF EMPLOYMENT</h3>

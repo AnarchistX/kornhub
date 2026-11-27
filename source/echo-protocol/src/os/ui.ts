@@ -75,6 +75,8 @@ function defaultGeom(app: AppId, index: number): Omit<Win, 'app' | 'z'> {
       return { x: 200 + off, y: 36 + off, w: clampW(820), h: clampH(560) };
     case 'notes':
       return { x: Math.max(104, W - 520 - 30), y: 60 + off, w: clampW(500), h: clampH(520) };
+    case 'terminal':
+      return { x: 130 + off, y: 30 + off, w: clampW(860), h: clampH(600) };
   }
 }
 

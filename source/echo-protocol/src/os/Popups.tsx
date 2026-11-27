@@ -11,7 +11,7 @@ export function IntroSticky() {
   return (
     <div className="scrim" style={{ background: 'rgba(6,8,10,0.35)' }}>
       <div className="sticky-pop">
-        <div className="sticky">{'ROOKIE —\nRead my email before you touch anything.\nCoffee machine is busted.\n\n— R.T.'}</div>
+        <div className="sticky">{nightDef().sticky}</div>
         <button
           className="btn big"
           style={{ width: '100%' }}

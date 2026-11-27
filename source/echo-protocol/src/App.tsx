@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { useGame, useSettings } from './engine/store';
 import { audio } from './engine/audio';
 import { DEBUG } from './engine/hooks';
+import { getState, nightDef } from './engine/store';
+import { answer } from './engine/rules';
 import { useUi } from './os/ui';
 import { ConfirmDialog } from './os/Popups';
 import { Desktop } from './os/Desktop';
@@ -46,6 +48,16 @@ function DebugOverlay() {
       {JSON.stringify({ screen: s.screen, minute: s.night.minute, arrived: s.night.arrived.length, errors: s.night.errors, writeups: s.writeups, suspicion: s.suspicion, flags: s.flags }, null, 1)}
     </pre>
   );
+}
+
+if (DEBUG && typeof window !== 'undefined') {
+  (window as unknown as { __echo: unknown }).__echo = {
+    answer: (id: string) => {
+      const t = nightDef().tickets.find((x) => x.id === id);
+      return t && t.kind !== 'alert' ? answer(t, getState().profile, nightDef()) : null;
+    },
+    state: () => getState(),
+  };
 }
 
 export function App() {

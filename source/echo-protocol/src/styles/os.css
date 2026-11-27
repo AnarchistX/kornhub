@@ -564,3 +564,12 @@
   justify-content: flex-start;
   min-height: 42px;
 }
+
+.dock.seven .dock-btn {
+  font-size: 9.5px;
+  letter-spacing: 0;
+}
+.dock.seven .dock-btn svg {
+  width: 23px;
+  height: 23px;
+}

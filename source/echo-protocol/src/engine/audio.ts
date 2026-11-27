@@ -18,7 +18,10 @@ export type Sfx =
   | 'type'
   | 'paper'
   | 'thunk'
-  | 'beep';
+  | 'beep'
+  | 'ring'
+  | 'hangup'
+  | 'mount';
 
 export type Ambience = 'none' | 'noc' | 'rain' | 'wind';
 
@@ -199,6 +202,27 @@ class AudioEngine {
           this.noiseBurst(t + 0.8 + i * 0.07 + Math.random() * 0.05, { type: 'bandpass', freq: 1200, q: 4, peak: 0.08, decay: 0.02 });
         }
         break;
+      case 'ring': {
+        // Two-tone electronic trill, ISDN desk-set style.
+        for (let i = 0; i < 12; i++) {
+          this.tone(t + i * 0.05, { type: 'square', freq: i % 2 ? 1470 : 1290, peak: 0.035, attack: 0.002, decay: 0.045 });
+        }
+        for (let i = 0; i < 12; i++) {
+          this.tone(t + 0.75 + i * 0.05, { type: 'square', freq: i % 2 ? 1470 : 1290, peak: 0.035, attack: 0.002, decay: 0.045 });
+        }
+        break;
+      }
+      case 'hangup':
+        this.tone(t, { type: 'sine', freq: 480, peak: 0.05, decay: 0.12 });
+        this.tone(t + 0.16, { type: 'sine', freq: 380, peak: 0.05, decay: 0.2 });
+        this.noiseBurst(t + 0.02, { type: 'lowpass', freq: 600, peak: 0.12, decay: 0.08 });
+        break;
+      case 'mount':
+        // Robot arm in the tape library: servo whine and a clunk.
+        this.tone(t, { type: 'sawtooth', freq: 180, to: 420, peak: 0.025, attack: 0.05, decay: 0.7 });
+        this.noiseBurst(t + 0.8, { type: 'lowpass', freq: 700, peak: 0.3, decay: 0.12 });
+        this.tone(t + 0.8, { type: 'sine', freq: 110, to: 50, peak: 0.3, attack: 0.002, decay: 0.15 });
+        break;
       case 'sting': {
         const ctx = this.ctx;
         const g = ctx.createGain();
@@ -221,6 +245,58 @@ class AudioEngine {
         });
         break;
       }
+    }
+  }
+
+  // ---------- voices: no recordings, just a filtered blip per syllable ----------
+  private lastBlip = 0;
+  blip(pitch: number) {
+    if (!this.ctx) return;
+    const now = performance.now();
+    if (now - this.lastBlip < 55) return;
+    this.lastBlip = now;
+    const ctx = this.ctx;
+    const t = ctx.currentTime + 0.005;
+    const o = ctx.createOscillator();
+    o.type = 'triangle';
+    const f = pitch * (0.9 + Math.random() * 0.25);
+    o.frequency.setValueAtTime(f, t);
+    o.frequency.exponentialRampToValueAtTime(f * 0.86, t + 0.07);
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 900 + Math.random() * 500;
+    bp.Q.value = 1.2;
+    const g = ctx.createGain();
+    this.env(g, t, 0.09, 0.006, 0.07);
+    o.connect(bp).connect(g).connect(this.sfxBus);
+    o.start(t);
+    o.stop(t + 0.1);
+  }
+
+  private hiss: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
+  /** Phone-line hiss under a video call. */
+  line(on: boolean) {
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    if (on && !this.hiss) {
+      const src = ctx.createBufferSource();
+      src.buffer = this.noise;
+      src.loop = true;
+      const f = ctx.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.value = 1800;
+      f.Q.value = 0.6;
+      const gain = ctx.createGain();
+      gain.gain.value = 0.0001;
+      gain.gain.setTargetAtTime(0.025, ctx.currentTime, 0.3);
+      src.connect(f).connect(gain).connect(this.sfxBus);
+      src.start();
+      this.hiss = { src, gain };
+    } else if (!on && this.hiss) {
+      const h = this.hiss;
+      h.gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.2);
+      window.setTimeout(() => h.src.stop(), 900);
+      this.hiss = null;
     }
   }
 

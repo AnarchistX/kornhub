@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { addNote, addSuspicion, nightDef, setFlag, useGame } from '../engine/store';
+import type { AlertTicket } from '../engine/types';
+import { applyEffect, getState, nightDef, setFlag, useGame } from '../engine/store';
 import { clockAt, personByBadge, shortName } from '../engine/text';
-import { BADGE_LOG, PURGE_AT } from '../content/night1';
+import { BADGE_LOG, CAMERA_WORK_ORDERS, purgedEntry, visibleEntry } from '../content/badgelog';
 import { confirmDialog, flashEye, setUi, useUi } from '../os/ui';
 import { CAMS, Cctv, type CamId } from './Cctv';
 import { audio } from '../engine/audio';
@@ -28,19 +29,19 @@ export function LogsApp({ compact }: { compact: boolean }) {
 function BadgeLog({ compact }: { compact: boolean }) {
   const filter = useUi((u) => u.logFilter);
   const minute = useGame((s) => s.night.minute);
+  const n = useGame((s) => s.night.n);
+  const flags = useGame((s) => s.flags);
   const profile = useGame((s) => s.profile);
-  const escalated = useGame((s) => s.flags.n1_whitlock === 'escalated');
-  const copied = useGame((s) => !!s.flags.n1_copied_log);
+  const copied = useGame((s) => s.notes.some((x) => x.id === 'n1-0417-log'));
   const q = filter.trim().toLowerCase();
 
   const rows = useMemo(() => {
-    const visible = BADGE_LOG.filter((e) => e.at === undefined || e.at <= minute);
-    return visible
+    const s = getState();
+    return BADGE_LOG.filter((e) => visibleEntry(e, s))
       .map((e) => {
         const vault = e.reader === VAULT;
         const who = vault ? null : personByBadge(e.badge, profile);
-        const purged = escalated && e.badge === '0417' && e.at === 252 && minute >= PURGE_AT;
-        return { e, vault, who, purged, name: vault ? 'COMPARTMENTED' : who ? shortName(who).toUpperCase() : 'UNKNOWN' };
+        return { e, vault, purged: purgedEntry(e, s), name: vault ? 'COMPARTMENTED' : who ? shortName(who).toUpperCase() : 'UNKNOWN' };
       })
       .filter((r) => {
         if (!q) return true;
@@ -48,27 +49,21 @@ function BadgeLog({ compact }: { compact: boolean }) {
         return r.e.badge.includes(q) || r.e.reader.toLowerCase().includes(q) || r.name.toLowerCase().includes(q);
       })
       .reverse();
-  }, [minute, profile, escalated, q]);
+    // minute/n/flags drive visibility and purges
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minute, n, flags, profile, q]);
 
   const isWhitlock = q === '0417' || q.includes('whitlock');
   const copy = () =>
-    confirmDialog(
-      'Sentinel · copy to personal storage',
-      'Copying access records to personal storage is logged by SENTINEL under your login.\n\nContinue?',
-      'Copy',
-      () => {
-        const body = rows
-          .filter((r) => !r.purged)
-          .map((r) => `${r.e.date} ${r.e.time}  ${r.e.reader.padEnd(10)} ${r.e.badge}  ${r.e.event}`)
-          .join('\n');
-        if (addNote({ id: 'n1-0417-log', title: 'Badge 0417 · access history', body })) {
-          addSuspicion(6);
-          setFlag('n1_copied_log', true);
-          audio.play('printer');
-          flashEye();
-        }
-      },
-    );
+    confirmDialog('Sentinel · copy to personal storage', 'Copying access records to personal storage is logged by SENTINEL under your login.\n\nContinue?', 'Copy', () => {
+      const body = rows
+        .filter((r) => !r.purged)
+        .map((r) => `${r.e.date} ${r.e.time}  ${r.e.reader.padEnd(10)} ${r.e.badge}  ${r.e.event}`)
+        .join('\n');
+      applyEffect({ suspicion: 6, flags: { n1_copied_log: true }, note: { id: 'n1-0417-log', title: 'Badge 0417 · access history', body } });
+      audio.play('printer');
+      flashEye();
+    });
 
   return (
     <>
@@ -153,11 +148,31 @@ function BadgeLog({ compact }: { compact: boolean }) {
 
 function Cameras() {
   const minute = useGame((s) => s.night.minute);
-  const alertIn = useGame((s) => s.night.arrived.includes('n1a1'));
-  const checked = useGame((s) => !!s.flags.n1_cam_checked);
+  const n = useGame((s) => s.night.n);
+  const arrived = useGame((s) => s.night.arrived);
+  const flags = useGame((s) => s.flags);
+  const scheduleCopied = useGame((s) => s.notes.some((x) => x.id === 'cam-wo'));
   const def = nightDef();
   const now = clockAt(def, minute);
   const live: CamId[] = ['gate', 'corridor'];
+  const alert = def.tickets.find((t): t is AlertTicket => t.kind === 'alert' && !!t.camera && arrived.includes(t.id));
+  const camKey = alert ? `${alert.id}_cam` : '';
+  const result = alert?.camera ? alert.camera(getState()) : null;
+
+  const copySchedule = () =>
+    confirmDialog('Sentinel · copy to personal storage', 'Copying work orders to personal storage is logged by SENTINEL under your login.\n\nContinue?', 'Copy', () => {
+      applyEffect({
+        suspicion: 6,
+        note: {
+          id: 'cam-wo',
+          title: 'B3-EAST-CAM-2 · maintenance work orders',
+          body: CAMERA_WORK_ORDERS.map((w) => `${w.wo}  ${w.date}  ${w.window}  requested by: [RESTRICTED]`).join('\n'),
+        },
+      });
+      audio.play('printer');
+      flashEye();
+    });
+
   return (
     <div className="cams scroll" style={{ flex: 1, minHeight: 0 }}>
       {live.map((c) => (
@@ -172,19 +187,19 @@ function Cameras() {
         <div className="section-t" style={{ marginTop: 0 }}>
           {CAMS.b3east.id} · {CAMS.b3east.name} · stills by request
         </div>
-        {alertIn ? (
-          checked ? (
-            <Cctv cam="b3east" date="12/07/99" time="03:12:44" unavailable={'SCHEDULED MAINTENANCE 03:11–03:14\nWO-7731 · REQUESTED BY: [RESTRICTED]'} />
+        {alert && result ? (
+          flags[camKey] ? (
+            <Cctv cam={result.cam} date={result.date} time={result.time} unavailable={result.unavailable} figure={result.figure} />
           ) : (
             <div className="cam-pick">
               <button
                 className="btn"
                 onClick={() => {
                   audio.play('click');
-                  setFlag('n1_cam_checked', true);
+                  setFlag(camKey, true);
                 }}
               >
-                Request still · 03:12:44
+                Request still · {result.time}
               </button>
             </div>
           )
@@ -192,6 +207,36 @@ function Cameras() {
           <Cctv cam="b3east" date={now.date} time={`${now.time}:00`} />
         )}
       </div>
+      {n >= 2 && (
+        <div>
+          <div className="section-t" style={{ marginTop: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+            B3-EAST-CAM-2 · maintenance work orders
+            <button className="btn" style={{ minHeight: 28 }} onClick={copySchedule} disabled={scheduleCopied}>
+              {scheduleCopied ? 'Copied' : 'Copy to notes'}
+            </button>
+          </div>
+          <table className="log-table">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Date</th>
+                <th>Window</th>
+                <th>Requested by</th>
+              </tr>
+            </thead>
+            <tbody>
+              {CAMERA_WORK_ORDERS.map((w) => (
+                <tr key={w.wo}>
+                  <td>{w.wo}</td>
+                  <td>{w.date}</td>
+                  <td>{w.window}</td>
+                  <td className="masked">[RESTRICTED]</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

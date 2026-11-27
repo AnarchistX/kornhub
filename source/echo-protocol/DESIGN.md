@@ -132,6 +132,11 @@ consent notice. Messages arrive as Messenger Service popups ("net send").
 | LANTERN | Messenger Service contact | Orvessan Directorate. Writes formal English, no contractions, **DD/MM dates** |
 | SA Ruth Calloway | FBI Counterintelligence | Enters in Act II |
 | Casey | Your younger sibling | College in Morgantown. Light personal emails |
+| Ellen Nakamura | Systems Engineer (H-L), L3 | Files most Y2K changes |
+| Curtis Boyd | Network Engineer (H-L), L3 | Thinks you hate him (DNS) |
+| Hal Lindqvist | Facilities Engineer, L3 | HVAC and camera firmware |
+| Dale Ferris | Records Clerk, L3 | Records Management |
+| Eugene Arliss | Legal Counsel, L4 | Placed the legal hold on Whitlock's mail |
 
 ## 6. Structure
 
@@ -145,18 +150,32 @@ consent notice. Messages arrive as Messenger Service popups ("net send").
   copy the log to Notes (+suspicion), then **LOG AS KI-114** (what Ray wants) or
   **ESCALATE** to Security. 06:58: LANTERN's first message, listing earlier dates
   in DD/MM format (21/10, 02/11, 16/11, 30/11).
-- **Night 2 — Tue Dec 7.** Adds CHANGE tickets (Y2K remediation): approve if on
-  the change calendar, CAB-approved, inside the window. **RECSYS-Y2K-0047**
-  arrives from Ashcombe's office and passes every rule. If you escalated, Pike
-  video-calls you. LANTERN points you at the camera schedule. Casey's flu email.
-- **Night 3 — Wed Dec 8.** Adds RECORDS requests (need-to-know). Reyes asks for
-  Whitlock's archived mail, which is under legal hold. Choice: follow the rule,
-  or help her through a workaround (suspicion). Freezer F-12 manifest: 4.2 kg
-  out, 3.9 kg in.
-- **Night 4 — Thu Dec 9.** Security audit drill. **Hacking moment:** restore
-  Whitlock's mailbox from backup tape before the 06:00 rotation overwrites it.
-  His unsent letter to the Senate committee. LANTERN: "Now you know why he is
-  dead."
+- **Night 2 — Tue Dec 7** *(built)*. CHANGE tickets (D-6 calendar, D-7 CAB,
+  D-8 window) against the Y2K Change Calendar. Ray video-calls to brief it (and
+  reacts to the Night 1 choice); Pike calls if you escalated. **Trap:** Facilities
+  asks to disable B3-EAST-CAM-2 03:00–03:20 with no CAB number. Denying it (the
+  correct call) keeps the camera on, so the 03:14 still shows **a figure with gray
+  hair and glasses** at the reader. Approving it is an error *and* blinds the
+  camera ("RELEASED BY NIGHT OPERATIONS"). **RECSYS-Y2K-0047** arrives from
+  Ashcombe's office and passes every rule. Cameras tab gains the work-order list
+  (every 0417 visit has one, requester RESTRICTED). Mom's casserole email.
+- **Night 3 — Wed Dec 8** *(built)*. RECORDS tickets (D-9 need-to-know: level AND
+  department, D-10 legal hold) against the Records Index. Reyes calls about her
+  request for Whitlock's archive (legal hold) and tells you he said to "read his
+  drafts" and that he "wasn't from here." Approving her F-12 manifest request
+  releases it: R7 checked out 4.20 kg, back 3.90 kg on 11/30, signed off "—M.A."
+  Transfer alert: RECSYS exporting 14 MB to HL-CORP-XFER (Halvard-Lowe). Casey:
+  her RA got better, then much worse two weeks later. LANTERN: the mailbox was
+  deleted 15/10, the tapes rotate Friday 06:00.
+- **Night 4 — Thu Dec 9** *(built)*. Audit sweeps every 30 min 02:00–06:00.
+  **Trap:** Ashcombe's office asks to move the tape rotation to 03:30 (not on the
+  calendar). Approving it moves the deadline. 01:40 LANTERN opens the **Terminal**
+  (backup console). Restore minigame: audit the mailbox (deleted 10/15 08:12),
+  pick a tape (C-2/C-3 hold the draft; A-2/C-1 are too old; C-4 is after the
+  deletion), choose a target (live = fast and +20 suspicion, local +6, drafts +3),
+  pause during sweeps (+10 each if caught running), beat the rotation. The
+  letter names ECHO, EV-31, Ashcombe, Varga, Halvard-Lowe, F-12, and "the last
+  night of the year." LANTERN: "Now you know why he is dead." End of Act I.
 
 **Act II — COMPARTMENT** (Nights 5–9, Dec 13–23). The routine collapses. Ray is
 suspended; you are acting night lead with wider access. The **evidence board**
@@ -195,8 +214,10 @@ get the evidence out on a 1999 network).
 the tab is hidden, a modal/tutorial/messenger popup is open, or the game is
 paused. Tickets arrive at fixed times. Unprocessed tickets at 07:00 are backlog.
 
-**Ticket kinds.** `access` (Act I N1+), `alert` (story alerts, N1+), `change`
-(N2+), `records` (N3+). Access answers are **computed from the rules**, never
+**Ticket kinds.** `access` (N1+), `alert` (story events, N1+), `change` (N2+),
+`records` (N3+). Change answers come from the calendar; records answers from the
+Records Index plus the requester's personnel record. The deny menu only offers the
+directives that apply to that ticket kind. Access answers are **computed from the rules**, never
 hand-authored, so content can't contradict itself:
 - D-1 clearance ≥ area level · D-2 approver is the listed supervisor (no one
   else) · D-3 badge valid on the access date · D-4 personnel ACTIVE ·
@@ -215,8 +236,15 @@ nights. Shown as the session monitor eye in the tray. 40: Security notice.
 **Notes / evidence.** Items copied from logs, mail, records. In Act II they slot
 into deduction questions on the evidence board.
 
-**Hints.** From Night 2, an optional "Ask LANTERN" on investigation puzzles.
-Hints are always correct. Hint count feeds one line in the epilogues.
+**Video calls** (`CallDef`): ring until answered, grainy talking portrait, typed
+lines with per-character voice blips (no recordings), choices whose `Effect`s set
+flags / suspicion / notes. Calls and messenger popups pause the clock.
+
+**Suspicion thresholds** (`content/global.ts`): 40 → Security notice email (once);
+70 → Pike's interview call (once, choices can lower it); 100 → `detained`.
+
+**Hints.** LANTERN's messages and Reyes's call carry the hints in Act I. From Act II,
+an optional "Ask LANTERN" on deduction puzzles. Hints are always correct.
 
 **Flags.** Story choices are `flags` (e.g. `n1_whitlock: logged|escalated|ignored`,
 `n1_copied_log: true`).
@@ -274,10 +302,11 @@ safe-area aware. Desktop gets draggable windows.
 
 ## 10. Roadmap
 
-1. **M1 (this build):** engine, title, new-hire profile, prologue, boot/login,
+1. **M1 (done):** engine, title, new-hire profile, prologue, boot/login,
    Night 1 complete with tutorial and the 0417 choice, shift report, dawn, saves.
-2. **M2:** Nights 2–4 (CHANGE and RECORDS tickets, Pike's call, the tape
-   restore hacking moment, the letter). Act I complete.
+2. **M2 (done):** Nights 2–4: CHANGE and RECORDS tickets, binder tabs, video
+   calls, the Terminal tape restore, the letter, suspicion thresholds and the
+   `detained` ending, per-night dawns and reports. Act I complete.
 3. **M3:** Act II systems (evidence board, video calls, acting lead), Nights 5–7.
 4. **M4:** Nights 8–9, Act II branch, all branches wired.
 5. **M5:** Act III Rollover and every ending. Polish, music integration.
@@ -295,3 +324,10 @@ safe-area aware. Desktop gets draggable windows.
 | RECSYS-Y2K-0047 approved by you (N2) | It is the Rollover wipe (Act III) |
 | Casey: "half my floor has the flu" | EV-31's flu-like first phase; dread, not plot |
 | Route 9 sign in the prologue | Where Whitlock died |
+| Camera work orders, requester RESTRICTED (N2) | Ashcombe's office blinds the camera for each visit |
+| The 03:14 still on N2: gray hair, glasses | Ashcombe uses Whitlock's badge |
+| RECSYS → HL-CORP-XFER export (N3) | Halvard-Lowe is copying the records out before the wipe |
+| F-12 R7: 4.20 kg out, 3.90 kg in on 11/30, "—M.A." | 300 g of EV-31 stock left the freezer |
+| Reyes: "he wasn't from here" | Whitlock was Teodor Vlasko (Act II) |
+| Early tape rotation request from Ashcombe's office (N4) | They knew the drafts were on the tapes |
+| The letter: "the last night of the year" | RECSYS-Y2K-0047 and the Rollover transfer |

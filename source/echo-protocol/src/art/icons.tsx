@@ -122,6 +122,15 @@ export const RulesIcon = ({ className }: P) => (
   </svg>
 );
 
+export const TerminalIcon = ({ className }: P) => (
+  <S className={className}>
+    <rect x="3" y="5" width="26" height="20" fill="#0d0a05" stroke={ink} strokeWidth="2" />
+    <path d="M7 10l4 3-4 3" fill="none" stroke={amber} strokeWidth="2" />
+    <rect x="13" y="16" width="7" height="2" fill={amber} />
+    <rect x="9" y="25" width="14" height="3" fill={putty} stroke={ink} strokeWidth="1.5" />
+  </S>
+);
+
 export const APP_ICONS: Record<AppId, (p: P) => React.ReactElement> = {
   queue: QueueIcon,
   directives: DirectivesIcon,
@@ -129,6 +138,7 @@ export const APP_ICONS: Record<AppId, (p: P) => React.ReactElement> = {
   logs: LogsIcon,
   personnel: PersonnelIcon,
   notes: NotesIcon,
+  terminal: TerminalIcon,
 };
 
 export const APP_NAMES: Record<AppId, string> = {
@@ -138,4 +148,5 @@ export const APP_NAMES: Record<AppId, string> = {
   logs: 'Logs',
   personnel: 'Personnel',
   notes: 'Notes',
+  terminal: 'Terminal',
 };

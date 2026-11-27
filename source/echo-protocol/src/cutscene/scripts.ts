@@ -66,7 +66,7 @@ export const CUTSCENES: Record<string, Shot[]> = {
       scene: 'dawn',
       ms: 7500,
       tag: 'STATE ROUTE 9 · 07:12',
-      caption: 'You drive down the mountain with the heater on high and the radio off.',
+      caption: (s) => DAWN[s.night.n]?.[0](s) ?? 'You drive down the mountain with the heater on high and the radio off.',
       from: [0, -2, 1.18],
       to: [0, 0, 1.06],
       ambience: 'wind',
@@ -75,12 +75,38 @@ export const CUTSCENES: Record<string, Shot[]> = {
       scene: 'dawn',
       ms: 8500,
       tag: 'STATE ROUTE 9 · 07:19',
-      caption: (s) =>
-        s.flags.n1_saw_deceased
-          ? 'Dr. Paul Whitlock died on this road on October 14th. His badge opened a door at 3:12 this morning.'
-          : 'The sun comes up over the ridge like nothing happened. Maybe nothing did.',
+      caption: (s) => DAWN[s.night.n]?.[1](s) ?? 'The sun comes up over the ridge like nothing happened.',
       from: [3, 1, 1.3],
       to: [0, 2, 1.42],
     },
+  ],
+};
+
+/** Two dawn captions per night, reacting to what the player did. */
+const DAWN: Record<number, [(s: GameState) => string, (s: GameState) => string]> = {
+  1: [
+    () => 'You drive down the mountain with the heater on high and the radio off.',
+    (s) =>
+      s.flags.n1_saw_deceased
+        ? 'Dr. Paul Whitlock died on this road on October 14th. His badge opened a door at 3:12 this morning.'
+        : 'The sun comes up over the ridge like nothing happened. Maybe nothing did.',
+  ],
+  2: [
+    () => 'Two nights. Two 3 a.m. visits from a dead man’s badge.',
+    (s) =>
+      s.flags.n2x1_cam && s.night.results.n2c5?.decision !== 'approve'
+        ? 'You keep seeing the figure on the camera. Gray hair. Glasses. You have seen that face in the directory.'
+        : 'The ridge looks smaller in daylight. It isn’t.',
+  ],
+  3: [
+    () => 'Casey’s RA got better, then worse. You tell yourself it is just a bad flu year.',
+    (s) => (s.flags.reyes_hint ? '“Read his drafts.” You turn the words over all the way down the mountain.' : 'Twenty-two days until the millennium. It feels closer.'),
+  ],
+  4: [
+    (s) => (s.flags.n4_letter ? 'You read it twice in the parking lot with the engine running.' : 'The tapes rotated. Whatever Whitlock left behind is gone.'),
+    (s) =>
+      s.flags.n4_letter
+        ? 'Paul Whitlock did not die in an accident. And somebody on that ridge knows you know.'
+        : 'But LANTERN is still out there. And so is whatever Whitlock was afraid of.',
   ],
 };

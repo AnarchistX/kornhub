@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { getState, markRead, nightDef, useGame } from '../engine/store';
+import { allMails, getState, markRead, nightDef, useGame } from '../engine/store';
 import { clockAt, fill, loginName } from '../engine/text';
 import { setUi, useUi } from '../os/ui';
 import { BackIcon } from '../art/icons';
@@ -11,7 +11,7 @@ export function MailApp({ compact }: { compact: boolean }) {
   const read = useGame((s) => s.night.read);
   const profile = useGame((s) => s.profile);
   const sel = useUi((u) => u.mailSel);
-  const mails = useMemo(() => def.mails.filter((m) => ids.includes(m.id)).reverse(), [def, ids]);
+  const mails = useMemo(() => allMails(def).filter((m) => ids.includes(m.id)).sort((a, b) => ids.indexOf(b.id) - ids.indexOf(a.id)), [def, ids]);
   const current = mails.find((m) => m.id === sel) ?? null;
 
   useEffect(() => {

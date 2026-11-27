@@ -1,11 +1,13 @@
 // Core data model. Everything in GameState must stay JSON-serializable (it is saved to localStorage).
+// Content definitions (NightDef and friends) may hold functions: they are code, never saved.
 
 export type Gender = 'male' | 'female';
 export type AreaId = 'ADM' | 'OPS' | 'B1' | 'B2' | 'B3' | 'B3V';
 export type Level = 1 | 2 | 3 | 4 | 5;
 export type Status = 'ACTIVE' | 'TERMINATED' | 'DECEASED';
-export type DirectiveId = 'D1' | 'D2' | 'D3' | 'D4' | 'D5';
-export type AppId = 'queue' | 'directives' | 'mail' | 'logs' | 'personnel' | 'notes';
+export type DirectiveId = 'D1' | 'D2' | 'D3' | 'D4' | 'D5' | 'D6' | 'D7' | 'D8' | 'D9' | 'D10';
+export type AppId = 'queue' | 'directives' | 'mail' | 'logs' | 'personnel' | 'notes' | 'terminal';
+export type CamId = 'gate' | 'corridor' | 'b3east';
 
 export interface PortraitSpec {
   seed: number;
@@ -49,30 +51,95 @@ export interface Directive {
 
 export type Decision = 'approve' | 'deny' | 'forward';
 
-export interface AccessTicket {
-  kind: 'access';
+/** Changes a story beat makes to the game state. Plain data so it can live in content files. */
+export interface Effect {
+  flags?: Record<string, string | number | boolean>;
+  suspicion?: number;
+  note?: { id: string; title: string; body: string };
+}
+
+interface TicketBase {
   id: string;
   ref: string;
   at: number; // game minutes after 23:00
+  remark?: string;
+  tutorial?: string;
+}
+
+export interface AccessTicket extends TicketBase {
+  kind: 'access';
   requester: string;
   area: AreaId;
   date: string;
   window: string;
   purpose: string;
   approver: string;
-  remark?: string;
-  tutorial?: string;
 }
 
-export interface AlertTicket {
-  kind: 'alert';
-  id: string;
-  ref: string;
-  at: number;
+export interface ChangeTicket extends TicketBase {
+  kind: 'change';
+  change: string;
+  system: string;
   title: string;
+  requester: string;
+  window: string;
+  cab: string;
+  description: string;
 }
 
-export type Ticket = AccessTicket | AlertTicket;
+export interface RecordsTicket extends TicketBase {
+  kind: 'records';
+  requester: string;
+  record: string;
+  purpose: string;
+}
+
+export interface CamResult {
+  cam: CamId;
+  date: string;
+  time: string;
+  unavailable?: string;
+  figure?: boolean;
+}
+
+export interface AlertLine {
+  k: string;
+  v: string;
+  link?: 'person' | 'history';
+}
+
+export interface AlertTicket extends TicketBase {
+  kind: 'alert';
+  title: string;
+  heading: string;
+  lines: AlertLine[];
+  badge?: string; // for [look up] and [pull badge history]
+  person?: string; // person id the badge resolves to
+  camera?: (s: GameState) => CamResult;
+  flag: string; // where the disposition is stored
+  options: { value: 'log' | 'escalate'; label: string }[];
+  done: { log: string; escalate: string };
+}
+
+export type Ticket = AccessTicket | ChangeTicket | RecordsTicket | AlertTicket;
+
+export interface CalendarEntry {
+  change: string;
+  system: string;
+  window: string;
+  cab: string;
+  owner: string;
+}
+
+export interface RecordDef {
+  id: string;
+  title: string;
+  level: Level;
+  dept: string;
+  compartment?: string;
+  hold?: string;
+  contents?: string; // shown once released
+}
 
 export interface MailDef {
   id: string;
@@ -83,7 +150,8 @@ export interface MailDef {
   body: string;
   personal?: boolean;
   unlocks?: DirectiveId[];
-  when?: (s: GameState) => boolean; // optional condition, evaluated on arrival
+  when?: (s: GameState) => boolean; // delivered at or after `at`, once this is true
+  effect?: Effect;
 }
 
 export interface NetSendDef {
@@ -91,6 +159,33 @@ export interface NetSendDef {
   at: number;
   from: string;
   body: (s: GameState) => string;
+  when?: (s: GameState) => boolean;
+  effect?: Effect;
+}
+
+export interface CallChoice {
+  text: string;
+  to: string;
+  effect?: Effect;
+}
+
+export interface CallNode {
+  who: 'them' | 'you' | 'sys';
+  text: string | ((s: GameState) => string);
+  next?: string | ((s: GameState) => string);
+  choices?: CallChoice[];
+  effect?: Effect;
+  end?: boolean;
+}
+
+export interface CallDef {
+  id: string;
+  at: number;
+  from: string; // person id
+  place: string;
+  when?: (s: GameState) => boolean;
+  start: string;
+  nodes: Record<string, CallNode>;
 }
 
 export interface BadgeLogEntry {
@@ -99,7 +194,9 @@ export interface BadgeLogEntry {
   reader: string;
   badge: string;
   event: 'GRANTED' | 'DENIED' | 'FAULT';
-  at?: number; // only for entries that happen during the current night (game minute)
+  night?: number; // appears during this night at minute `at`; earlier nights see nothing, later nights see history
+  at?: number;
+  purge?: { flag: string; value: string; at: number; night: number }; // scrubbed when the flag matches
 }
 
 export interface NightDef {
@@ -110,10 +207,17 @@ export interface NightDef {
   longDate: string;
   daysLeft: number;
   minuteMs: number; // real milliseconds per game minute
+  sticky: string; // Ray's note on the monitor
   directives: DirectiveId[];
+  apps?: AppId[]; // extra apps available from the start of the night
   tickets: Ticket[];
   mails: MailDef[];
   netsends: NetSendDef[];
+  calls: CallDef[];
+  calendar: CalendarEntry[];
+  records: string[]; // ids of records in the index tonight
+  /** Night-specific simulation (e.g. the Night 4 tape restore). Pure: returns the next state. */
+  onTick?: (s: GameState) => GameState;
 }
 
 export type Screen = 'title' | 'profile' | 'cutscene' | 'card' | 'boot' | 'desktop' | 'report' | 'tbc' | 'ending';
@@ -160,9 +264,10 @@ export interface NightState {
   newDirectives: DirectiveId[];
   errors: number;
   netsends: string[];
-  popup: string | null; // net send id currently on screen
+  calls: string[];
+  popup: string | null; // messenger popup or call id currently on screen
   notices: Notice[];
-  introDone: boolean; // Ray's first sticky note dismissed
+  introDone: boolean; // Ray's sticky note dismissed
 }
 
 export interface NightReport {
@@ -170,6 +275,7 @@ export interface NightReport {
   processed: number;
   total: number;
   correct: number;
+  counted: number;
   errors: number;
   writeups: number;
 }

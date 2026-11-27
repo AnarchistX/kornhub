@@ -1,18 +1,32 @@
 import { useEffect } from 'react';
-import { go, nightDef } from '../engine/store';
+import { advanceNight, go, useGame } from '../engine/store';
+import { NIGHTS } from '../content/nights';
 import { audio } from '../engine/audio';
+import { resetUi } from '../os/ui';
 
 export function NightCard() {
-  const def = nightDef();
+  const n = useGame((s) => s.night.n);
+  const ended = useGame((s) => s.night.ended);
+
+  // Arriving here from the dawn cutscene: roll over to the next night, with a clean desktop.
   useEffect(() => {
+    advanceNight();
+    resetUi();
+  }, []);
+
+  useEffect(() => {
+    if (ended) return;
     audio.setAmbience('none');
     audio.play('thunk');
     const t = window.setTimeout(() => go('boot'), 5600);
     return () => window.clearTimeout(t);
-  }, []);
+  }, [ended, n]);
+
+  if (ended) return <div className="card-screen" />;
+  const def = NIGHTS[n];
   return (
     <div className="card-screen" onClick={() => go('boot')} role="button" aria-label="Continue">
-      <div>
+      <div key={n}>
         <div className="n">NIGHT {def.n}</div>
         <div className="l" style={{ animationDelay: '0.7s' }}>
           {def.weekday} · {def.longDate}

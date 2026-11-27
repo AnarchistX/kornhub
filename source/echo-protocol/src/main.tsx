@@ -20,11 +20,14 @@ import './styles/apps.css';
 import './styles/screens.css';
 import { installTextures } from './art/textures';
 import { App } from './App';
+import { Gallery } from './art/Gallery';
+
+const GALLERY = new URLSearchParams(window.location.search).has('gallery');
 
 installTextures();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    {GALLERY ? <Gallery /> : <App />}
   </StrictMode>,
 );

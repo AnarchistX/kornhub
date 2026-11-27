@@ -1,4 +1,4 @@
-import type { BadgeLogEntry, GameState, NightDef } from '../engine/types';
+import type { GameState, NightDef } from '../engine/types';
 
 const D = '12/06/99';
 const N = '12/07/99';
@@ -18,7 +18,11 @@ export const NIGHT1: NightDef = {
   longDate: 'December 6, 1999',
   daysLeft: 25,
   minuteMs: 1300,
+  sticky: 'ROOKIE —\nRead my email before you touch anything.\nCoffee machine is busted.\n\n— R.T.',
   directives: ['D1', 'D2', 'D3', 'D4'],
+  calls: [],
+  calendar: [],
+  records: [],
   tickets: [
     { kind: 'access', id: 'n1t1', ref: 'AR-1206-01', at: 4, requester: 'hollis', area: 'OPS', date: D, window: '23:30–01:00', purpose: 'Replace HVAC filters, server room', approver: 'brennan', tutorial: 'approve' },
     { kind: 'access', id: 'n1t2', ref: 'AR-1206-02', at: 18, requester: 'odom', area: 'B3', date: N, window: '00:00–02:00', purpose: 'Sample inventory, cold storage', approver: 'reyes', tutorial: 'clearance' },
@@ -29,7 +33,31 @@ export const NIGHT1: NightDef = {
     { kind: 'access', id: 'n1t7', ref: 'AR-1207-07', at: 150, requester: 'ashcombe', area: 'B3V', date: N, window: '02:00–03:00', purpose: 'Scheduled maintenance per SAP roster', approver: 'varga' },
     { kind: 'access', id: 'n1t8', ref: 'AR-1207-08', at: 178, requester: 'quinlan', area: 'OPS', date: N, window: '02:30–03:00', purpose: 'Coffee machine, OPS break room. This is an emergency.', approver: 'pike' },
     { kind: 'access', id: 'n1t9', ref: 'AR-1207-09', at: 210, requester: 'reyes', area: 'B3', date: N, window: '03:30–05:00', purpose: 'Inventory reconciliation, freezer F-12', approver: 'ashcombe' },
-    { kind: 'alert', id: 'n1a1', ref: 'SEN-0312-B3E2', at: 252, title: 'Reader fault · B3-EAST-2' },
+    {
+      kind: 'alert',
+      id: 'n1a1',
+      ref: 'SEN-0312-B3E2',
+      at: 252,
+      title: 'Reader fault · B3-EAST-2',
+      heading: 'SENTINEL SECURITY EVENT',
+      lines: [
+        { k: 'EVENT', v: 'READER FAULT (SUSPECTED)' },
+        { k: 'READER', v: 'B3-EAST-2 · Containment B3, east airlock' },
+        { k: 'TIME', v: '12/07/99 03:12:44' },
+        { k: 'BADGE', v: '0417', link: 'person' },
+        { k: 'RESULT', v: 'ACCESS GRANTED · no door-open event recorded' },
+        { k: 'MATCHES', v: 'KI-114 (B3 phantom reads after midnight)' },
+      ],
+      badge: '0417',
+      person: 'whitlock',
+      camera: () => ({ cam: 'b3east', date: '12/07/99', time: '03:12:44', unavailable: 'SCHEDULED MAINTENANCE 03:11–03:14\nWO-7731 · REQUESTED BY: [RESTRICTED]' }),
+      flag: 'n1_whitlock',
+      options: [
+        { value: 'log', label: 'Log as reader fault' },
+        { value: 'escalate', label: 'Escalate to Security' },
+      ],
+      done: { log: '> LOGGED AS READER FAULT · KI-114 · CLOSED', escalate: '> ESCALATED TO SECURITY · SEC-4471 · AWAITING REVIEW' },
+    },
     { kind: 'access', id: 'n1t10', ref: 'AR-1207-10', at: 285, requester: 'marchetti', area: 'OPS', date: N, window: '06:30–07:30', purpose: 'Early start, Y2K patch staging', approver: 'tolliver' },
     { kind: 'access', id: 'n1t11', ref: 'AR-1207-11', at: 315, requester: 'odom', area: 'B3', date: N, window: '05:00–07:00', purpose: 'Media prep for Dr. Reyes', approver: 'sato' },
     { kind: 'access', id: 'n1t12', ref: 'AR-1207-12', at: 350, requester: 'hollis', area: 'B3', date: N, window: '05:00–06:00', purpose: 'HVAC damper inspection, east airlock', approver: 'brennan' },
@@ -141,29 +169,3 @@ Okay, one is for you.
     },
   ],
 };
-
-/** Badge reader history visible in the Logs app. Entries with `at` appear during Night 1. */
-export const BADGE_LOG: BadgeLogEntry[] = [
-  { date: '10/13/99', time: '07:58:12', reader: 'ADM-MAIN', badge: '0417', event: 'GRANTED' },
-  { date: '10/13/99', time: '08:20:41', reader: 'B3-EAST-1', badge: '0417', event: 'GRANTED' },
-  { date: '10/13/99', time: '18:05:03', reader: 'ADM-MAIN', badge: '0417', event: 'GRANTED' },
-  { date: '10/21/99', time: '03:14:08', reader: 'B3-EAST-2', badge: '0417', event: 'GRANTED' },
-  { date: '11/02/99', time: '03:11:52', reader: 'B3-EAST-2', badge: '0417', event: 'GRANTED' },
-  { date: '11/16/99', time: '03:13:30', reader: 'B3-EAST-2', badge: '0417', event: 'GRANTED' },
-  { date: '11/30/99', time: '03:12:17', reader: 'B3-EAST-2', badge: '0417', event: 'GRANTED' },
-  { date: '12/06/99', time: '07:12:55', reader: 'ADM-MAIN', badge: '0388', event: 'GRANTED' },
-  { date: '12/06/99', time: '08:02:10', reader: 'B3-EAST-1', badge: '0388', event: 'GRANTED' },
-  { date: '12/06/99', time: '17:41:37', reader: 'ADM-MAIN', badge: '0102', event: 'GRANTED' },
-  { date: '12/06/99', time: '22:48:09', reader: 'GATE-1', badge: '1187', event: 'GRANTED' },
-  { date: '12/06/99', time: '22:51:30', reader: 'OPS-NOC', badge: '1187', event: 'GRANTED' },
-  { date: '12/06/99', time: '22:55:02', reader: 'GATE-1', badge: '0592', event: 'GRANTED' },
-  { date: '12/06/99', time: '23:31:44', reader: 'OPS-SRV', badge: '0772', event: 'GRANTED', at: 32 },
-  { date: '12/07/99', time: '01:02:18', reader: 'ADM-2F', badge: '1033', event: 'GRANTED', at: 122 },
-  { date: '12/07/99', time: '01:58:40', reader: 'B3-VAULT', badge: '0102', event: 'GRANTED', at: 179 },
-  { date: '12/07/99', time: '02:31:06', reader: 'OPS-BRK', badge: '0592', event: 'GRANTED', at: 211 },
-  { date: '12/07/99', time: '02:57:12', reader: 'B3-VAULT', badge: '0102', event: 'GRANTED', at: 237 },
-  { date: '12/07/99', time: '03:12:44', reader: 'B3-EAST-2', badge: '0417', event: 'GRANTED', at: 252 },
-  { date: '12/07/99', time: '03:33:51', reader: 'B3-EAST-1', badge: '0388', event: 'GRANTED', at: 273 },
-];
-
-export const PURGE_AT = 316; // 04:16. If the player escalated, the 03:12 record is scrubbed.

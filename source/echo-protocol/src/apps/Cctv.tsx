@@ -1,5 +1,6 @@
 // Black-and-white security camera stills, drawn in code.
-export type CamId = 'gate' | 'corridor' | 'b3east';
+import type { CamId } from '../engine/types';
+export type { CamId };
 
 export const CAMS: Record<CamId, { id: string; name: string }> = {
   gate: { id: 'GATE-CAM-1', name: 'Main gate' },
@@ -54,7 +55,7 @@ function Gate() {
   );
 }
 
-function Airlock() {
+function Airlock({ figure }: { figure?: boolean }) {
   return (
     <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
       <rect width="400" height="300" fill={G1} />
@@ -65,11 +66,33 @@ function Airlock() {
       {Array.from({ length: 9 }).map((_, i) => (
         <path key={i} d={`M${110 + i * 22} 270 l22 -18 h-10 l-22 18z`} fill={G4} />
       ))}
+      {figure && (
+        <g>
+          <defs>
+            <pattern id="cc-hair" width="3" height="3" patternUnits="userSpaceOnUse">
+              <rect width="3" height="3" fill="#cfd6cd" />
+              <circle cx="1.5" cy="1.5" r="0.9" fill={G3} />
+            </pattern>
+          </defs>
+          {/* a figure at the east reader, three-quarters from behind */}
+          <path d="M262 142 C262 132 308 132 312 142 L322 262 L250 262 Z" fill="#b9c1b7" />
+          <path d="M286 142 L290 262" stroke={G3} strokeWidth="2" opacity="0.6" />
+          <path d="M306 150 C312 150 314 152 316 154" stroke="#b9c1b7" strokeWidth="9" strokeLinecap="round" />
+          <rect x="312" y="146" width="9" height="12" fill={G4} stroke={G1} strokeWidth="1" />
+          <rect x="276" y="128" width="20" height="16" fill="#8e968c" />
+          <ellipse cx="286" cy="114" rx="15" ry="17" fill="#8e968c" />
+          <path d="M271 112 C270 96 302 94 302 110 C298 104 280 104 271 112Z" fill="url(#cc-hair)" />
+          <path d="M271 110 C268 120 270 126 274 128" stroke="url(#cc-hair)" strokeWidth="5" fill="none" />
+          <path d="M296 116 L304 115" stroke="#f4f7f2" strokeWidth="2" />
+          <rect x="244" y="88" width="88" height="182" fill="none" stroke="#e8efe6" strokeWidth="1.5" strokeDasharray="6 5" />
+          <text x="246" y="84" fill="#e8efe6" fontFamily="VT323, monospace" fontSize="16">MOTION</text>
+        </g>
+      )}
     </svg>
   );
 }
 
-export function Cctv({ cam, date, time, unavailable }: { cam: CamId; date: string; time: string; unavailable?: string }) {
+export function Cctv({ cam, date, time, unavailable, figure }: { cam: CamId; date: string; time: string; unavailable?: string; figure?: boolean }) {
   return (
     <figure className="cctv" style={{ margin: 0 }}>
       {unavailable ? (
@@ -85,7 +108,7 @@ export function Cctv({ cam, date, time, unavailable }: { cam: CamId; date: strin
       ) : cam === 'corridor' ? (
         <Corridor />
       ) : (
-        <Airlock />
+        <Airlock figure={figure} />
       )}
       <div className="osd top">
         <span>{CAMS[cam].id}</span>
