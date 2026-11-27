@@ -194,7 +194,10 @@ function DecisionView({ t, compact }: { t: AccessTicket | ChangeTicket | Records
     const who = personById(t.requester, profile);
     docs = (
       <>
-        <RecordsForm t={t} profile={profile} result={result} />
+        <div style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
+          <RecordsForm t={t} profile={profile} result={result} />
+          {result?.decision === 'approve' && <Released id={t.record} />}
+        </div>
         <div style={{ display: 'grid', gap: 16 }}>
           <RecordCard id={t.record} />
           {who && <PersonnelRecord p={who} profile={profile} />}
@@ -210,7 +213,6 @@ function DecisionView({ t, compact }: { t: AccessTicket | ChangeTicket | Records
         {missed && t.tutorial && <div className="tut sticky miss">{`Nope. ${result.error}\nThat one's on me. Next one counts. —R`}</div>}
         {missed && !t.tutorial && <div className="tut sticky miss">{`AUDIT FLAG: ${result.error}`}</div>}
         <div className="docs">{docs}</div>
-        {t.kind === 'records' && result?.decision === 'approve' && <Released id={t.record} />}
       </div>
       {!result ? (
         <div className="decide">
@@ -276,7 +278,7 @@ function Released({ id }: { id: string }) {
       flashEye();
     });
   return (
-    <article className="doc paper released selectable" style={{ marginTop: 16 }}>
+    <article className="doc paper released selectable">
       <header className="doc-head">
         <div>
           Released to requester
