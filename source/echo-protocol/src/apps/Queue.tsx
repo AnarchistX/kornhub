@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { AccessTicket, AlertTicket, ChangeTicket, DirectiveId, RecordsTicket, Ticket } from '../engine/types';
 import { applyEffect, decide, getState, nightDef, resolveAlert, setFlag, useGame } from '../engine/store';
-import { personById } from '../engine/text';
+import { fill, personById } from '../engine/text';
 import { DIRECTIVES, RECORDS } from '../content/world';
 import { confirmDialog, flashEye, getUi, openApp, setUi, useUi } from '../os/ui';
 import { CalendarDoc, ChangeForm, PersonnelRecord, RecordCard, RecordsForm, RequestForm } from './docs';
@@ -336,7 +336,7 @@ function AlertView({ t }: { t: AlertTicket }) {
               <div key={l.k} style={{ display: 'contents' }}>
                 <dt>{l.k}</dt>
                 <dd>
-                  {l.v}
+                  {fill(l.v, getState())}
                   {l.link === 'person' && t.person && (
                     <>
                       {' '}
@@ -368,7 +368,7 @@ function AlertView({ t }: { t: AlertTicket }) {
           )}
           {cam && camChecked && (
             <>
-              <Cctv cam={cam.cam} date={cam.date} time={cam.time} unavailable={cam.unavailable} figure={cam.figure} />
+              <Cctv cam={cam.cam} date={cam.date} time={cam.time} unavailable={cam.unavailable} figure={cam.figure} truck={cam.truck} />
               {cam.figure && (
                 <div style={{ marginTop: 8 }}>
                   <button className="alink" onClick={copyStill} disabled={stillCopied}>
@@ -378,14 +378,18 @@ function AlertView({ t }: { t: AlertTicket }) {
               )}
             </>
           )}
-          {result && <div className="alert-result">{result.decision === 'log' ? t.done.log : t.done.escalate}</div>}
+          {result && (
+            <div className="alert-result">
+              {(t.options.find((o) => o.value === result.choice) ?? t.options[result.decision === 'escalate' ? 1 : 0])?.done}
+            </div>
+          )}
         </section>
       </div>
       {!result && (
         <div className="decide">
           <span className="lbl">Disposition</span>
           {t.options.map((o) => (
-            <button key={o.value} className={`btn big ${o.value === 'escalate' ? 'deny' : ''}`} onClick={() => resolveAlert(t.id, o.value)}>
+            <button key={o.value} className={`btn big ${o.danger ? 'deny' : ''}`} onClick={() => resolveAlert(t.id, o.value)}>
               <span>{o.label}</span>
             </button>
           ))}

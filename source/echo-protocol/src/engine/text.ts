@@ -1,5 +1,5 @@
 import type { GameState, NightDef, Person, Profile } from './types';
-import { PEOPLE, PLAYER_BADGE, PLAYER_ID } from '../content/world';
+import { CONTACTS, PEOPLE, PLAYER_BADGE, PLAYER_ID } from '../content/world';
 
 /** MM/DD/YY → sortable number (YYYYMMDD). Two-digit years below 50 are 20xx. */
 export function dateNum(d: string): number {
@@ -10,14 +10,18 @@ export function dateNum(d: string): number {
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
-/** Wall clock for a game minute (0 = 23:00 on the night's start date). */
+/** Wall clock for a game minute (0 = the shift start, 23:00 unless the night says otherwise). */
 export function clockAt(night: NightDef, minute: number) {
-  const total = 23 * 60 + Math.floor(minute);
+  const total = (night.startHour ?? 23) * 60 + Math.floor(minute);
   const h = Math.floor(total / 60) % 24;
   const m = total % 60;
   const date = total >= 24 * 60 ? night.nextDate : night.date;
   return { date, time: `${pad(h)}:${pad(m)}`, h, m };
 }
+
+export const shiftLength = (night: NightDef) => night.shiftMinutes ?? 480;
+export const startClock = (night: NightDef) => clockAt(night, 0).time;
+export const endClock = (night: NightDef) => clockAt(night, shiftLength(night));
 
 export function loginName(p: Profile): string {
   const last = p.last.toLowerCase().replace(/[^a-z]/g, '');
@@ -48,7 +52,7 @@ export function allPeople(profile: Profile | null): Person[] {
 
 export function personById(id: string, profile: Profile | null): Person | undefined {
   if (id === PLAYER_ID && profile) return playerPerson(profile);
-  return PEOPLE[id];
+  return PEOPLE[id] ?? CONTACTS[id];
 }
 
 export function personByBadge(badge: string, profile: Profile | null): Person | undefined {

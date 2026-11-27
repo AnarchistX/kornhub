@@ -4,6 +4,7 @@ import { clockAt, fill, loginName } from '../engine/text';
 import { setUi, useUi } from '../os/ui';
 import { BackIcon } from '../art/icons';
 import { audio } from '../engine/audio';
+import { Portrait } from '../art/Portrait';
 
 export function MailApp({ compact }: { compact: boolean }) {
   const def = nightDef();
@@ -37,7 +38,7 @@ export function MailApp({ compact }: { compact: boolean }) {
             }}
           >
             <span className="top">
-              <span>{m.personal ? 'PERSONAL' : 'INTERNAL'}</span>
+              <span>{m.fax ? 'FAX' : m.personal ? 'PERSONAL' : 'INTERNAL'}</span>
               <span className="meta">{clockAt(def, m.at).time}</span>
             </span>
             <span className="name">{m.from}</span>
@@ -63,7 +64,22 @@ export function MailApp({ compact }: { compact: boolean }) {
             </button>
           </div>
         )}
-        {current ? (
+        {current?.fax ? (
+          <div className="mail-read scroll">
+            <article className="fax-sheet selectable">
+              <div className="fax-head">
+                {clockAt(def, current.at).date.split('/').slice(0, 2).reverse().join('/')}/{clockAt(def, current.at).date.split('/')[2]} {clockAt(def, current.at).time} · FROM {fill(current.addr, s)} · P.01/01
+              </div>
+              <h4>{current.subject}</h4>
+              {current.photo && (
+                <div className="fax-photo">
+                  <Portrait spec={current.photo} title="Photo on the fax" />
+                </div>
+              )}
+              <pre className="mail-body">{fill(current.body, s)}</pre>
+            </article>
+          </div>
+        ) : current ? (
           <div className="mail-read scroll">
             <article className="mail-sheet paper">
               <dl className="mail-hdr">

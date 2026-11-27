@@ -4,6 +4,7 @@ import { audio } from './engine/audio';
 import { DEBUG } from './engine/hooks';
 import { getState, nightDef } from './engine/store';
 import { answer } from './engine/rules';
+import { CASES } from './content/board';
 import { useUi } from './os/ui';
 import { ConfirmDialog } from './os/Popups';
 import { Desktop } from './os/Desktop';
@@ -57,6 +58,7 @@ if (DEBUG && typeof window !== 'undefined') {
       return t && t.kind !== 'alert' ? answer(t, getState().profile, nightDef()) : null;
     },
     state: () => getState(),
+    board: () => CASES.map((c) => ({ id: c.id, title: c.title, questions: c.questions.map((q) => ({ id: q.id, answers: q.slots.map((x) => x.answer) })) })),
   };
 }
 

@@ -43,10 +43,9 @@ export const NIGHT3: NightDef = {
       ],
       flag: 'n3_xfer',
       options: [
-        { value: 'log', label: 'Log as scheduled job' },
-        { value: 'escalate', label: 'Escalate to Security' },
+        { value: 'logged', label: 'Log as scheduled job', done: '> LOGGED AS SCHEDULED JOB · CLOSED' },
+        { value: 'escalated', label: 'Escalate to Security', danger: true, done: '> ESCALATED TO SECURITY · SEC-4512 · AWAITING REVIEW' },
       ],
-      done: { log: '> LOGGED AS SCHEDULED JOB · CLOSED', escalate: '> ESCALATED TO SECURITY · SEC-4512 · AWAITING REVIEW' },
     },
     { kind: 'records', id: 'n3r7', ref: 'RQ-1209-07', at: 230, requester: 'hollis', record: 'RX-3305', purpose: 'Work order cleanup' },
     { kind: 'change', id: 'n3c2', ref: 'CR-1209-02', at: 260, change: 'OPS-Y2K-0042', system: 'FIREWALL', title: 'Firewall rule-set Y2K review', requester: 'boyd', window: '12/10/99 00:30–01:30', cab: 'CAB-1199-22', description: 'Reload firewall rules with Y2K-safe logging timestamps.' },

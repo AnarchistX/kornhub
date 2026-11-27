@@ -108,6 +108,7 @@ function ShotView({ shot, onDone }: { shot: Shot; onDone: () => void }) {
         </div>
       )}
       {shot.rain ? <Rain density={shot.rain} /> : null}
+      {shot.snow ? <Rain density={shot.snow} snow /> : null}
       {shot.title && (
         <div className="cs-title">
           {shot.title.map((l, k) => (

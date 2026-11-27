@@ -35,10 +35,25 @@ export const loadCheckpoint = () => {
   return valid(s) ? s : null;
 };
 export const writeCheckpoint = (s: GameState) => write(CHECKPOINT, s);
+/** A second, longer-lived checkpoint at a night that matters (the Act II choice), for replays. */
+export const writeCheckpointAt = (n: number, s: GameState) => write(`${CHECKPOINT}.n${n}`, s);
+export const loadCheckpointAt = (n: number) => {
+  const s = read<GameState>(`${CHECKPOINT}.n${n}`);
+  return valid(s) ? s : null;
+};
+
+const ENDINGS = 'kxrnage.echo.endings.v1';
+/** Endings seen on this device, across playthroughs. */
+export const foundEndings = (): string[] => read<string[]>(ENDINGS) ?? [];
+export const recordEnding = (id: string) => {
+  const all = foundEndings();
+  if (!all.includes(id)) write(ENDINGS, [...all, id]);
+};
 export function clearSaves() {
   try {
     window.localStorage.removeItem(SAVE);
     window.localStorage.removeItem(CHECKPOINT);
+    window.localStorage.removeItem(`${CHECKPOINT}.n9`);
   } catch {
     /* ignore */
   }

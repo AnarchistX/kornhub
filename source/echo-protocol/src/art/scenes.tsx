@@ -7,7 +7,7 @@ export const INK = '#0f1216';
 export const PAPER = '#e9dfc8';
 export const RED = '#c23b22';
 
-function rng(seed: number) {
+export function rng(seed: number) {
   let t = seed >>> 0;
   return () => {
     t = (t + 0x6d2b79f5) >>> 0;
@@ -17,7 +17,7 @@ function rng(seed: number) {
   };
 }
 
-function pine(x: number, base: number, h: number, w: number): string {
+export function pine(x: number, base: number, h: number, w: number): string {
   const tiers = 4;
   let d = '';
   for (let i = 0; i < tiers; i++) {
@@ -29,7 +29,7 @@ function pine(x: number, base: number, h: number, w: number): string {
   return d + `M${x - w * 0.05} ${base - h * 0.1}h${w * 0.1}V${base}h${-w * 0.1}Z`;
 }
 
-function forest(seed: number, x0: number, x1: number, base: number, hMin: number, hMax: number, gap: number): string {
+export function forest(seed: number, x0: number, x1: number, base: number, hMin: number, hMax: number, gap: number): string {
   const r = rng(seed);
   let d = '';
   for (let x = x0; x < x1; x += gap * (0.6 + r() * 0.8)) {
@@ -39,7 +39,7 @@ function forest(seed: number, x0: number, x1: number, base: number, hMin: number
   return d;
 }
 
-function ridge(seed: number, y: number, amp: number, step: number, bottom = 1600): string {
+export function ridge(seed: number, y: number, amp: number, step: number, bottom = 1600): string {
   const r = rng(seed);
   let d = `M0 ${bottom}L0 ${y}`;
   let v = 0;
@@ -50,7 +50,7 @@ function ridge(seed: number, y: number, amp: number, step: number, bottom = 1600
   return d + `L1600 ${bottom}Z`;
 }
 
-function Halftone({ u }: { u: string }) {
+export function Halftone({ u }: { u: string }) {
   return (
     <>
       <pattern id={`hL${u}`} width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
@@ -87,7 +87,7 @@ function Halftone({ u }: { u: string }) {
 }
 
 /** A halftone glow: big dots in the core, fine dots in the falloff. */
-function Glow({ u, cx, cy, r, k = 1 }: { u: string; cx: number; cy: number; r: number; k?: number }) {
+export function Glow({ u, cx, cy, r, k = 1 }: { u: string; cx: number; cy: number; r: number; k?: number }) {
   const id = `${u}${Math.round(cx)}${Math.round(cy)}${Math.round(r)}`;
   return (
     <g opacity={k}>
@@ -103,7 +103,7 @@ function Glow({ u, cx, cy, r, k = 1 }: { u: string; cx: number; cy: number; r: n
   );
 }
 
-function Stars({ seed, n, maxY }: { seed: number; n: number; maxY: number }) {
+export function Stars({ seed, n, maxY }: { seed: number; n: number; maxY: number }) {
   const r = rng(seed);
   return (
     <g fill={PAPER}>
@@ -114,7 +114,7 @@ function Stars({ seed, n, maxY }: { seed: number; n: number; maxY: number }) {
   );
 }
 
-const svgProps = {
+export const svgProps = {
   viewBox: '0 0 1600 1600',
   preserveAspectRatio: 'xMidYMid slice',
   width: '100%',

@@ -6,7 +6,7 @@ export type AreaId = 'ADM' | 'OPS' | 'B1' | 'B2' | 'B3' | 'B3V';
 export type Level = 1 | 2 | 3 | 4 | 5;
 export type Status = 'ACTIVE' | 'TERMINATED' | 'DECEASED';
 export type DirectiveId = 'D1' | 'D2' | 'D3' | 'D4' | 'D5' | 'D6' | 'D7' | 'D8' | 'D9' | 'D10';
-export type AppId = 'queue' | 'directives' | 'mail' | 'logs' | 'personnel' | 'notes' | 'terminal';
+export type AppId = 'queue' | 'directives' | 'mail' | 'logs' | 'personnel' | 'notes' | 'terminal' | 'board' | 'syscon';
 export type CamId = 'gate' | 'corridor' | 'b3east';
 
 export interface PortraitSpec {
@@ -100,6 +100,7 @@ export interface CamResult {
   time: string;
   unavailable?: string;
   figure?: boolean;
+  truck?: boolean; // the convoy at Gate 1
 }
 
 export interface AlertLine {
@@ -116,9 +117,16 @@ export interface AlertTicket extends TicketBase {
   badge?: string; // for [look up] and [pull badge history]
   person?: string; // person id the badge resolves to
   camera?: (s: GameState) => CamResult;
-  flag: string; // where the disposition is stored
-  options: { value: 'log' | 'escalate'; label: string }[];
-  done: { log: string; escalate: string };
+  flag: string; // where the chosen option's value is stored
+  options: AlertOption[];
+}
+
+export interface AlertOption {
+  value: string; // stored in the flag, e.g. 'logged' | 'escalated' | 'granted'
+  label: string;
+  danger?: boolean; // red button, red stamp
+  done: string; // line printed once chosen
+  effect?: Effect; // applied with the choice
 }
 
 export type Ticket = AccessTicket | ChangeTicket | RecordsTicket | AlertTicket;
@@ -149,6 +157,8 @@ export interface MailDef {
   subject: string;
   body: string;
   personal?: boolean;
+  fax?: boolean; // rendered as a fax sheet
+  photo?: PortraitSpec; // a photo printed on the fax
   unlocks?: DirectiveId[];
   when?: (s: GameState) => boolean; // delivered at or after `at`, once this is true
   effect?: Effect;
@@ -158,6 +168,7 @@ export interface NetSendDef {
   id: string;
   at: number;
   from: string;
+  alarm?: boolean; // a SYSCON alarm: red, with a button that opens SYSCON
   body: (s: GameState) => string;
   when?: (s: GameState) => boolean;
   effect?: Effect;
@@ -181,7 +192,10 @@ export interface CallNode {
 export interface CallDef {
   id: string;
   at: number;
-  from: string; // person id
+  from: string; // person id ('' for an unknown caller)
+  name?: string; // shown when the caller isn't in the directory
+  role?: string;
+  video?: boolean; // false: voice only, "video disabled by caller"
   place: string;
   when?: (s: GameState) => boolean;
   start: string;
@@ -201,6 +215,7 @@ export interface BadgeLogEntry {
 
 export interface NightDef {
   n: number;
+  act?: string; // shown on the night card, e.g. 'ACT II · COMPARTMENT'
   weekday: string;
   date: string; // start date, MM/DD/YY
   nextDate: string; // date after midnight
@@ -218,6 +233,15 @@ export interface NightDef {
   records: string[]; // ids of records in the index tonight
   /** Night-specific simulation (e.g. the Night 4 tape restore). Pure: returns the next state. */
   onTick?: (s: GameState) => GameState;
+  /** Clock hour the shift starts (default 23) and its length in game minutes (default 480). */
+  startHour?: number;
+  shiftMinutes?: number;
+  /** Line under the clock when the shift ends (default: day shift takes over). */
+  endLine?: string;
+  /** The finale: which ending the finished night leads to. */
+  ending?: (s: GameState) => string;
+  /** A mid-shift game over (e.g. containment lost). Checked every tick. */
+  fail?: (s: GameState) => string | null;
 }
 
 export type Screen = 'title' | 'profile' | 'cutscene' | 'card' | 'boot' | 'desktop' | 'report' | 'tbc' | 'ending';
@@ -231,6 +255,7 @@ export interface Profile {
 
 export interface TicketResult {
   decision: Decision | 'log' | 'escalate';
+  choice?: string; // story decisions: the option value picked
   cite?: DirectiveId;
   correct: boolean;
   error?: string;
@@ -294,6 +319,8 @@ export interface GameState {
   scratch: string;
   reports: NightReport[];
   ending: string | null;
+  board?: Record<string, string[]>; // evidence board: chosen noun id per blank, by question id
+  solved?: string[]; // confirmed case ids
 }
 
 export interface Settings {

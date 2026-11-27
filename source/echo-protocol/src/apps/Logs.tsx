@@ -3,6 +3,8 @@ import type { AlertTicket } from '../engine/types';
 import { applyEffect, getState, nightDef, setFlag, useGame } from '../engine/store';
 import { clockAt, personByBadge, shortName } from '../engine/text';
 import { BADGE_LOG, CAMERA_WORK_ORDERS, purgedEntry, visibleEntry } from '../content/badgelog';
+import { SESSION_LOG, visibleSession } from '../content/sessions';
+import { fill } from '../engine/text';
 import { confirmDialog, flashEye, setUi, useUi } from '../os/ui';
 import { CAMS, Cctv, type CamId } from './Cctv';
 import { audio } from '../engine/audio';
@@ -11,6 +13,7 @@ const VAULT = 'B3-VAULT';
 
 export function LogsApp({ compact }: { compact: boolean }) {
   const tab = useUi((u) => u.logTab);
+  const lead = useGame((s) => !!s.flags.lead);
   return (
     <div className="app col">
       <div className="tabs" role="tablist">
@@ -20,8 +23,13 @@ export function LogsApp({ compact }: { compact: boolean }) {
         <button className={`tab ${tab === 'cams' ? 'on' : ''}`} role="tab" onClick={() => setUi({ logTab: 'cams' })}>
           Cameras
         </button>
+        {lead && (
+          <button className={`tab ${tab === 'sessions' ? 'on' : ''}`} role="tab" onClick={() => setUi({ logTab: 'sessions' })}>
+            Sessions
+          </button>
+        )}
       </div>
-      {tab === 'badge' ? <BadgeLog compact={compact} /> : <Cameras />}
+      {tab === 'badge' ? <BadgeLog compact={compact} /> : tab === 'sessions' && lead ? <Sessions /> : <Cameras />}
     </div>
   );
 }
@@ -238,5 +246,66 @@ function Cameras() {
         </div>
       )}
     </div>
+  );
+}
+
+function Sessions() {
+  const minute = useGame((s) => s.night.minute);
+  const n = useGame((s) => s.night.n);
+  const copied = useGame((s) => s.notes.some((x) => x.id === 'sessions'));
+  void minute;
+  void n;
+  const st = getState();
+  const rows = SESSION_LOG.filter((e) => visibleSession(e, st)).reverse();
+  const text = (v: string) => fill(v, st).replace(/\{LOGIN\}/g, fill('{login}', st).toUpperCase());
+  const copy = () =>
+    confirmDialog('Sentinel · copy to personal storage', 'Copying the session audit to personal storage is logged by SENTINEL under your login.\n\nContinue?', 'Copy', () => {
+      applyEffect({
+        suspicion: 6,
+        note: {
+          id: 'sessions',
+          title: 'SENTINEL session audit (excerpt)',
+          body: rows
+            .filter((r) => r.hot)
+            .map((r) => `${r.date} ${r.time}  ${text(r.user).padEnd(10)} ${r.app.padEnd(9)} ${text(r.action)}`)
+            .join('\n'),
+        },
+      });
+      audio.play('printer');
+      flashEye();
+    });
+  return (
+    <>
+      <div className="toolbar">
+        <span style={{ font: '600 11px var(--f-mono)', letterSpacing: '0.1em', color: 'var(--text-dim)' }}>NIGHT LEAD · SESSION AUDIT</span>
+        <button className="btn" style={{ marginLeft: 'auto' }} onClick={copy} disabled={copied}>
+          {copied ? 'Copied to notes' : 'Copy to notes'}
+        </button>
+      </div>
+      <div className="scroll" style={{ flex: 1, minHeight: 0, background: '#fbf8f0' }}>
+        <table className="log-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>User</th>
+              <th>App</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i} className={r.hot ? 'hit' : ''}>
+                <td>{r.date}</td>
+                <td>{r.time}</td>
+                <td>{text(r.user)}</td>
+                <td>{r.app}</td>
+                <td style={{ whiteSpace: 'normal' }}>{text(r.action)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }

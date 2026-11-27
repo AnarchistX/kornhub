@@ -63,10 +63,9 @@ export const NIGHT2: NightDef = {
           : { cam: 'b3east', date: N, time: '03:14:07', figure: true },
       flag: 'n2_whitlock',
       options: [
-        { value: 'log', label: 'Log as reader fault' },
-        { value: 'escalate', label: 'Escalate to Security' },
+        { value: 'logged', label: 'Log as reader fault', done: '> LOGGED AS READER FAULT · KI-114 · CLOSED' },
+        { value: 'escalated', label: 'Escalate to Security', danger: true, done: '> ESCALATED TO SECURITY · SEC-4498 · AWAITING REVIEW' },
       ],
-      done: { log: '> LOGGED AS READER FAULT · KI-114 · CLOSED', escalate: '> ESCALATED TO SECURITY · SEC-4498 · AWAITING REVIEW' },
     },
     { kind: 'access', id: 'n2a5', ref: 'AR-1208-05', at: 290, requester: 'nakamura', area: 'OPS', date: N, window: '06:00–14:00', purpose: 'Mail server patch verification', approver: 'kraemer' },
     { kind: 'change', id: 'n2c8', ref: 'CR-1208-08', at: 330, change: 'OPS-Y2K-0049', system: 'CCTV-NVR', title: 'Camera recorder Y2K firmware', requester: 'lindqvist', window: '12/14/99 02:00–03:00', cab: 'CAB-1299-05', description: 'Y2K firmware for the network video recorder. All cameras pause for up to 10 minutes.' },

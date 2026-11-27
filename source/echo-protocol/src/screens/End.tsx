@@ -3,28 +3,49 @@ import { restartNight, useGame } from '../engine/store';
 import { audio } from '../engine/audio';
 import { resetUi, setUi } from '../os/ui';
 
+const ACT2_LINES: Record<string, string> = {
+  fbi: 'You sent everything to Special Agent Calloway.',
+  press: 'You sent everything to Simon Hale at the Washington Ledger.',
+  lantern: 'You gave everything to LANTERN.',
+  ashcombe: 'You handed everything back to Dr. Ashcombe.',
+  none: 'You wiped it all and kept your head down.',
+};
+
 export function ToBeContinued() {
   const profile = useGame((s) => s.profile);
+  const n = useGame((s) => s.night.n);
   const letter = useGame((s) => !!s.flags.n4_letter);
+  const choice = useGame((s) => String(s.flags.act2_choice ?? 'none'));
+  const solved = useGame((s) => (s.solved ?? []).length);
   useEffect(() => {
     audio.setAmbience('wind');
-    audio.setTension(0.15);
+    audio.setTension(0.2);
   }, []);
+  const act2 = n >= 9;
   return (
     <div className="tbc">
       <div className="tbc-inner">
-        <span className="classif">END OF ACT I</span>
-        <h2>Night Shift</h2>
-        <p>
-          {profile?.first}, four nights at Marrow Creek.{' '}
-          {letter
-            ? "You have Paul Whitlock's letter, and the names in it."
-            : 'The tapes rotated before you could read whatever Paul Whitlock left behind.'}
-        </p>
-        <p>
-          Act II, <b>Compartment</b>, arrives in the next build. The routine is about to break: Ray is about to disappear from the schedule, and LANTERN wants more
-          than your attention. Your progress is saved on this device.
-        </p>
+        <span className="classif">{act2 ? 'END OF ACT II' : 'END OF ACT I'}</span>
+        <h2>{act2 ? 'Compartment' : 'Night Shift'}</h2>
+        {act2 ? (
+          <>
+            <p>
+              {profile?.first}, {ACT2_LINES[choice] ?? ACT2_LINES.none} You confirmed {solved} of 5 case files.
+            </p>
+            <p>
+              Act III, <b>Rollover</b>, arrives in the next build: December 31, 1999. A truck at Gate 1, a records wipe set for midnight, and everyone you have met on
+              the ridge for the last night of the millennium. Your progress is saved on this device.
+            </p>
+          </>
+        ) : (
+          <>
+            <p>
+              {profile?.first}, four nights at Marrow Creek.{' '}
+              {letter ? "You have Paul Whitlock's letter, and the names in it." : 'The tapes rotated before you could read whatever Paul Whitlock left behind.'}
+            </p>
+            <p>Act II arrives in the next build. Your progress is saved on this device.</p>
+          </>
+        )}
         <nav className="menu">
           <button
             className="ghost"
@@ -45,7 +66,7 @@ export function ToBeContinued() {
               setUi({ title: false });
             }}
           >
-            Replay Night 4
+            Replay Night {n}
           </button>
           <a className="ghost" href="/" style={{ textDecoration: 'none' }}>
             KXRNAGE

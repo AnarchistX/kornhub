@@ -11,6 +11,7 @@ export interface Shot {
   from?: [number, number, number]; // translate x%, y%, scale
   to?: [number, number, number];
   rain?: number;
+  snow?: number;
   ambience?: Ambience;
   sfx?: Sfx;
 }
@@ -108,5 +109,37 @@ const DAWN: Record<number, [(s: GameState) => string, (s: GameState) => string]>
       s.flags.n4_letter
         ? 'Paul Whitlock did not die in an accident. And somebody on that ridge knows you know.'
         : 'But LANTERN is still out there. And so is whatever Whitlock was afraid of.',
+  ],
+  5: [
+    () => "Ray's truck is in his driveway. The curtains are closed.",
+    (s) => (s.flags.reyes_guilt ? 'Naomi told Ashcombe that Ray was asking questions. Now Ray is gone.' : 'Somebody read your notes on Saturday morning. You keep thinking about that.'),
+  ],
+  6: [
+    () => 'The FBI knows your name now. So does whoever tried to log in as you.',
+    () => 'Casey is coming home early. They closed her floor.',
+  ],
+  7: [
+    () => 'Teodor Vlasko. Born in Kalnitsa, in a country that changed its name.',
+    () => 'LANTERN has a country now. Six nights until you have to choose.',
+  ],
+  8: [
+    (s) =>
+      s.flags.ashcombe === 'accepted'
+        ? "Level four. Permanent lead. A raise your father wouldn't believe."
+        : s.flags.ashcombe === 'refused'
+          ? 'You said no to the man who runs ECHO. You watch your mirrors all the way down Route 9.'
+          : 'Think quickly, he said. The year is ending.',
+    () => 'On the thirty-first, a truck will be waiting at Gate 1.',
+  ],
+  9: [
+    (s) =>
+      ({
+        fbi: 'Somewhere in Pittsburgh, a fax machine is still warm.',
+        press: 'Somewhere in Washington, a reporter is reading Paul Whitlock’s letter.',
+        lantern: 'Somewhere, LANTERN has everything you had.',
+        ashcombe: 'You handed it back. The promotion letter is on your passenger seat.',
+        none: 'You wiped your notes. Nobody knows what you know. Not even you, anymore.',
+      })[String(s.flags.act2_choice)] ?? 'You chose no one. Eight days.',
+    () => 'Christmas Eve. Eight days until the millennium.',
   ],
 };

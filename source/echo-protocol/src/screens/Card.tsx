@@ -3,6 +3,7 @@ import { advanceNight, go, useGame } from '../engine/store';
 import { NIGHTS } from '../content/nights';
 import { audio } from '../engine/audio';
 import { resetUi } from '../os/ui';
+import { startClock } from '../engine/text';
 
 export function NightCard() {
   const n = useGame((s) => s.night.n);
@@ -27,15 +28,20 @@ export function NightCard() {
   return (
     <div className="card-screen" onClick={() => go('boot')} role="button" aria-label="Continue">
       <div key={n}>
+        {def.act && (
+          <div className="l act" style={{ animationDelay: '0.1s' }}>
+            {def.act}
+          </div>
+        )}
         <div className="n">NIGHT {def.n}</div>
         <div className="l" style={{ animationDelay: '0.7s' }}>
           {def.weekday} · {def.longDate}
         </div>
         <div className="l" style={{ animationDelay: '1.3s' }}>
-          23:00 · Marrow Creek Annex
+          {startClock(def)} · Marrow Creek Annex
         </div>
         <div className="l red" style={{ animationDelay: '2s' }}>
-          {def.daysLeft} days until the millennium
+          {def.daysLeft > 0 ? `${def.daysLeft} days until the millennium` : 'The last night of the millennium'}
         </div>
       </div>
       <div className="hint">TAP TO CONTINUE</div>

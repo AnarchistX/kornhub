@@ -1,11 +1,14 @@
 import { useSyncExternalStore } from 'react';
 import type { CallDef, Decision, DirectiveId, Effect, GameState, MailDef, NightDef, NightState, NoteItem, Profile, Screen, Settings } from './types';
-import { FREE_ERRORS, LAST_BUILT_NIGHT, MAX_WRITEUPS, NIGHTS, SHIFT_MINUTES } from '../content/nights';
+import { FREE_ERRORS, LAST_BUILT_NIGHT, MAX_WRITEUPS, NIGHTS } from '../content/nights';
 import { GLOBAL_CALLS, GLOBAL_MAILS } from '../content/global';
 import { judge } from './rules';
 import { thresholds, withEffect } from './effects';
+import { CASES, questionRight } from '../content/board';
 import { audio, type Sfx } from './audio';
-import { clearSaves, loadCheckpoint, loadSave, loadSettings, writeCheckpoint, writeSave, writeSettings } from './persist';
+import { clearSaves, loadCheckpoint, loadCheckpointAt, loadSave, loadSettings, recordEnding, writeCheckpoint, writeCheckpointAt, writeSave, writeSettings } from './persist';
+import { shiftLength } from './text';
+import { CUTSCENES } from '../cutscene/scripts';
 
 // ---------------------------------------------------------------- state
 
@@ -214,7 +217,19 @@ export function beginNight(n: number) {
   const s = { ...state, night: freshNight(def), screen: 'card' as Screen };
   set(s);
   writeCheckpoint(s);
+  if (n === 9) writeCheckpointAt(9, s); // the Act II choice: kept for replays after the finale
 }
+
+/** Go back to the start of an earlier night that kept its own checkpoint (Night 9). */
+export function restartFrom(n: number) {
+  const cp = loadCheckpointAt(n);
+  if (!cp) return false;
+  set({ ...migrate(cp), screen: 'card', ending: null });
+  writeCheckpoint(cp);
+  return true;
+}
+
+export const canRestartFrom = (n: number) => !!loadCheckpointAt(n);
 
 export function restartNight() {
   const cp = loadCheckpoint();
@@ -236,15 +251,17 @@ export function tick() {
   if (def.onTick) s = thresholds(def.onTick(s));
   const r = deliver(s);
   s = r.s;
-  if (s.night.minute >= SHIFT_MINUTES && !s.night.popup) s = patchNight(s, { ended: true });
+  if (s.night.minute >= shiftLength(def) && !s.night.popup) s = patchNight(s, { ended: true });
   set(s);
   sfx(...r.sounds);
-  if (s.suspicion >= 100 && s.screen === 'desktop') endGame('detained');
+  if (s.suspicion >= 100 && s.screen === 'desktop') return endGame('detained');
+  const fail = def.fail?.(s);
+  if (fail && s.screen === 'desktop') endWith(fail);
 }
 
 export function closePopup() {
   let s = patchNight(state, { popup: null });
-  if (s.night.minute >= SHIFT_MINUTES) s = patchNight(s, { ended: true });
+  if (s.night.minute >= shiftLength(nightDef(s))) s = patchNight(s, { ended: true });
   const r = deliver(s);
   set(r.s);
   audio.play('click');
@@ -273,12 +290,14 @@ export function finishShift() {
     errors: n.errors,
     writeups: n.notices.filter((x) => x.kind === 'writeup').length,
   };
-  set({ ...state, reports: [...state.reports.filter((r) => r.n !== n.n), report], screen: 'report' });
+  const ending = def.ending ? def.ending(state) : state.ending;
+  set({ ...state, ending, reports: [...state.reports.filter((r) => r.n !== n.n), report], screen: 'report' });
   flushSave();
 }
 
 export function afterReport() {
   const n = state.night.n;
+  if (nightDef().ending && state.ending) return endWith(state.ending);
   if (n >= LAST_BUILT_NIGHT) {
     playCutscene('dawn', 'tbc');
     return;
@@ -295,6 +314,16 @@ export function advanceNight() {
 
 export function endGame(ending: string) {
   set({ ...state, ending, screen: 'ending' });
+  recordEnding(ending);
+  flushSave();
+}
+
+/** An ending with its own cutscene plays that first. */
+export function endWith(ending: string) {
+  const id = `end_${ending}`;
+  if (!CUTSCENES[id]) return endGame(ending);
+  set({ ...state, ending, screen: 'cutscene', cutscene: id, next: 'ending' });
+  recordEnding(ending);
   flushSave();
 }
 
@@ -328,15 +357,17 @@ export function dismissNotice(id: string) {
   if (state.writeups >= MAX_WRITEUPS) endGame('terminated');
 }
 
-export function resolveAlert(id: string, choice: 'log' | 'escalate') {
+export function resolveAlert(id: string, value: string) {
   const t = nightDef().tickets.find((x) => x.id === id);
   if (!t || t.kind !== 'alert' || state.night.results[id]) return;
+  const opt = t.options.find((o) => o.value === value);
+  if (!opt) return;
   const n = state.night;
-  const results = { ...n.results, [id]: { decision: choice, correct: true, at: n.minute } };
-  const flags = { ...state.flags, [t.flag]: choice === 'log' ? 'logged' : 'escalated' };
-  const r = deliver({ ...state, flags, night: { ...n, results } });
+  const results = { ...n.results, [id]: { decision: (opt.danger ? 'escalate' : 'log') as 'log' | 'escalate', choice: value, correct: true, at: n.minute } };
+  const flags = { ...state.flags, [t.flag]: value };
+  const r = deliver(withEffect({ ...state, flags, night: { ...n, results } }, opt.effect));
   set(r.s);
-  audio.play(choice === 'log' ? 'beep' : 'stamp');
+  audio.play(opt.danger ? 'stamp' : 'beep');
   sfx(...r.sounds);
 }
 
@@ -362,6 +393,48 @@ export function addNote(note: Omit<NoteItem, 'night'>) {
 
 export function setScratch(text: string) {
   set({ ...state, scratch: text });
+}
+
+// ---------------------------------------------------------------- evidence board
+
+export function setBoard(qid: string, slot: number, noun: string) {
+  const board = { ...(state.board ?? {}) };
+  const picks = [...(board[qid] ?? [])];
+  picks[slot] = noun;
+  board[qid] = picks;
+  set({ ...state, board });
+}
+
+/** Confirm a case file. Returns true when every blank in every question is right. */
+export function checkCase(id: string): boolean {
+  const c = CASES.find((x) => x.id === id);
+  if (!c || (state.solved ?? []).includes(id)) return false;
+  const ok = c.questions.every((q) => questionRight(q, state.board?.[q.id]));
+  const tries = Number(state.flags[`case_${id}_tries`] || 0) + 1;
+  set({
+    ...state,
+    solved: ok ? [...(state.solved ?? []), id] : state.solved ?? [],
+    flags: { ...state.flags, [`case_${id}_tries`]: tries, ...(ok ? { [`case_${id}`]: true } : {}) },
+  });
+  audio.play(ok ? 'stamp' : 'error');
+  return ok;
+}
+
+/** LANTERN fills one wrong or empty blank in the case, correctly. Always right; always counted. */
+export function hintCase(id: string): string | null {
+  const c = CASES.find((x) => x.id === id);
+  if (!c) return null;
+  for (const q of c.questions) {
+    const picks = state.board?.[q.id] ?? [];
+    if (questionRight(q, picks)) continue;
+    const i = q.slots.findIndex((slot, k) => picks[k] !== slot.answer);
+    if (i < 0) continue;
+    setBoard(q.id, i, q.slots[i].answer);
+    set({ ...state, flags: { ...state.flags, hints: Number(state.flags.hints || 0) + 1 } });
+    audio.play('netsend');
+    return q.id;
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------- lifecycle

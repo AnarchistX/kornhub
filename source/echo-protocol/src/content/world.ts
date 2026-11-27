@@ -159,8 +159,32 @@ NOTE: Variance on R7 within tolerance (dry ice sublimation). Signed off. —M.A.
     { id: 'RX-6120', title: 'Y2K readiness test results — RECSYS', level: 2, dept: 'Operations (Halvard-Lowe)' },
     { id: 'RX-6121', title: 'Change Advisory Board minutes (December 1999)', level: 2, dept: 'Operations (Halvard-Lowe)' },
     { id: 'RX-7002', title: 'Visitor log — Main Gate (December 1999)', level: 2, dept: 'Security' },
+    { id: 'RX-8810', title: 'SENTINEL session logs — Night Operations (Dec 1999)', level: 3, dept: 'Operations (Halvard-Lowe)' },
+    {
+      id: 'RX-2216',
+      title: 'F-12 sensor log, door and temperature (Nov 1999)',
+      level: 4,
+      dept: 'Microbiology',
+      contents: `F-12 · B3 COLD STORAGE · SENSOR LOG · 11/30/99
+
+TIME      EVENT          TEMP °C
+03:10:55  NOMINAL        -79.6
+03:13:02  DOOR OPEN      -79.4
+03:13:40  DOOR OPEN      -71.2
+03:14:51  DOOR CLOSED    -66.8
+03:22:10  RECOVERING     -74.0
+04:05:33  NOMINAL        -79.5
+10:21:08  DOOR OPEN      -79.5   scheduled (ODOM, C.)
+15:48:30  DOOR OPEN      -79.3   scheduled (ODOM, C.)`,
+    },
+    { id: 'RX-9001', title: 'Y2K contingency plan — B3 cold storage', level: 5, dept: 'Office of the Deputy Director' },
   ].map((r) => [r.id, r as RecordDef]),
 );
+
+/** People who call in but are not Annex staff, so they never appear in the Personnel directory. */
+export const CONTACTS: Record<string, Person> = {
+  calloway: { id: 'calloway', last: 'Calloway', first: 'Ruth', badge: '—', title: 'Special Agent, Counterintelligence', dept: 'FBI · Pittsburgh Field Office', level: 1, supervisor: null, status: 'ACTIVE', expires: '12/31/00', photo: { seed: 404, sex: 'f', hair: 0 }, external: 'Federal Bureau of Investigation' },
+};
 
 export const PLAYER_ID = 'player';
 export const PLAYER_BADGE = '1187';

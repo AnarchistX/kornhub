@@ -669,3 +669,10 @@
 .letter p {
   color: var(--text);
 }
+
+.card-screen .l.act {
+  margin: 0 0 14px;
+  font: 700 13px var(--f-mono);
+  letter-spacing: 0.4em;
+  color: var(--red);
+}

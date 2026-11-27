@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type { GameState } from '../engine/types';
 import { afterReport, getState, nightDef, useGame } from '../engine/store';
-import { loginName } from '../engine/text';
+import { endClock, loginName } from '../engine/text';
 import { useCompact } from '../engine/hooks';
 import { audio } from '../engine/audio';
 
@@ -32,6 +32,22 @@ function rayRemark(s: GameState) {
     if (s.flags.tape_job || s.flags.tape_mounting_id) parts.push("Pike's drill report says somebody was on the backup console last night. Tell me it wasn't you. Actually, don't tell me anything.");
     else parts.push("Pike's people say your console was clean. Good.");
   }
+  if (n >= 5) {
+    if (n === 5) parts.push(res.n5x1?.choice === 'granted' ? "Exception for Pruitt noted. Security thanks you. Don't make a habit of it." : 'Pike asked why her exception was denied. I told her to read the directives.');
+    if (n === 6 && res.n6r2?.decision === 'approve') parts.push("You released Night Operations session logs to the Deputy Director's office. Outside their department.");
+    if (n === 6)
+      parts.push(
+        s.flags.n6_intrusion === 'escalated'
+          ? 'Security opened SEC-4603 on your account. IT says somebody on the second floor mistyped a login. Three times.'
+          : "IT reset your password at two in the morning. Don't write the new one on a sticky note.",
+      );
+    if (n === 7) parts.push('The NOC fax printed something at 01:05. Wrong number, I assume. Shred wrong numbers.');
+    if (n === 8 && res.n8a1?.decision === 'approve') parts.push('You let a Halvard-Lowe vice president in without a valid approval. Corporate was delighted. I was not.');
+    if (n === 8 && s.flags.ashcombe === 'accepted') parts.push("The Deputy Director's office says you're staying on as lead through the rollover. Congratulations, I suppose.");
+    if (n === 8 && s.flags.ashcombe === 'refused') parts.push('The Deputy Director asked me whether you are "a team player." I said yes. Don\'t make me a liar.');
+    if (n === 9) parts.push('Change freeze is in effect. Merry Christmas.');
+    return `${parts.join('\n\n')}\n\n— J.K.`;
+  }
   return `${parts.join('\n\n')}\n\n— R.`;
 }
 
@@ -55,7 +71,7 @@ export function Report() {
   const text = [
     `HALVARD-LOWE TECHNICAL SERVICES`,
     `NIGHT OPS SHIFT REPORT · NIGHT ${def.n}`,
-    `RUN ${def.nextDate} 07:00`,
+    `RUN ${endClock(def).date} ${endClock(def).time}`,
     ``,
     `OPERATOR  ${loginName(p).toUpperCase()}`,
     `NAME      ${p.last.toUpperCase()}, ${p.first.charAt(0).toUpperCase()}.`,
@@ -68,7 +84,8 @@ export function Report() {
     dots('WRITE-UPS ON FILE', `${writeups} / 3`, W),
     ...alerts.map((t) => {
       const r = s.night.results[t.id];
-      return dots(t.ref.slice(0, W - 14), r ? (r.decision === 'log' ? 'LOGGED' : 'ESCALATED') : 'OPEN', W);
+      const v = r ? (r.choice ?? (r.decision === 'log' ? 'logged' : 'escalated')).toUpperCase() : 'OPEN';
+      return dots(t.ref.slice(0, W - 14), v, W);
     }),
     '-'.repeat(W),
     `END OF REPORT`,

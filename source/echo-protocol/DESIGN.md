@@ -177,15 +177,43 @@ consent notice. Messages arrive as Messenger Service popups ("net send").
   letter names ECHO, EV-31, Ashcombe, Varga, Halvard-Lowe, F-12, and "the last
   night of the year." LANTERN: "Now you know why he is dead." End of Act I.
 
-**Act II — COMPARTMENT** (Nights 5–9, Dec 13–23). The routine collapses. Ray is
-suspended; you are acting night lead with wider access. The **evidence board**
-unlocks: deduction questions filled with evidence and confirmed in batches
-(who used badge 0417 · what ECHO is · who Whitlock really was · where the stocks
-are going · what 0047 actually does). Video calls with Reyes, Calloway, and
-Ashcombe (who offers a promotion for loyalty). Midpoint reveal: LANTERN is the
-Directorate (DD/MM dates, phrasing, a Kalnitsa fax). Second reveal: Whitlock was
-Vlasko. **Branch at the end of Act II:** who gets the evidence: the FBI, LANTERN,
-the press (via Reyes), Ashcombe, or no one.
+**Act II — COMPARTMENT** (Nights 5–9, Dec 13–23) *(built)*. The routine
+collapses. Ray is on leave; you are acting night lead. Two new tools: the
+**Sessions** tab in Logs (lead-only session audit) and the **Board** (evidence
+board with five case files, see Systems). Supervisor remarks on the shift report
+come from J. Kraemer instead of Ray.
+
+- **Night 5 — Mon Dec 13** *(built)*. Kraemer makes you lead (unlocks
+  Sessions). The audit shows Ray exported badge 0417's history to a floppy on
+  12/10, and that `svc_recsys` read your NOTES.TXT on Saturday morning. Ray's
+  "don't reply" email from home. **Lead exception** (story alert): Pike asks for
+  a 72-hour exception for an expired badge; granting or denying sets
+  `n5_exception`. Reyes calls: she told Ashcombe that Ray was asking (`reyes_guilt`) or
+  that Paul "still got letters from home" (`reyes_home`). LANTERN points you at
+  the Board. Case file **BADGE 0417** opens.
+- **Night 6 — Wed Dec 15** *(built)*. Reyes's records request releases the F-12
+  sensor log (RX-2216: DOOR OPEN 03:13:02 on 11/30). Ashcombe's office requests
+  your personnel file (deny, D-9). **Logon failures on your account** at 01:55 from an
+  Administration PC while you are logged on in the NOC (`n6_intrusion`: lock it
+  or escalate). FBI Special Agent Ruth Calloway calls (`fbi_contact`);
+  you can tell her about LANTERN or lie. Casey's floor closes. Case file
+  **WHAT ECHO IS** opens.
+- **Night 7 — Fri Dec 17** *(built)*. A **fax** from "RELAY · VIENNA": Paul
+  Whitlock's photo on an Orvessan defector card, as Teodor Vlasko, DD/MM dates.
+  LANTERN calls, voice only ("Someone who writes the date correctly") and asks
+  for everything on the 23rd. Calloway follows up (`fbi_knows_23`). Case files
+  **WHO WHITLOCK WAS** and **WHO LANTERN IS** open.
+- **Night 8 — Mon Dec 20** *(built)*. OPS-Y2K-0058 is on the calendar now: the
+  B3 cold-storage transfer to HL-OFFSITE, 12/31 23:30–00:30. Ashcombe calls on
+  video and offers permanent lead, level four (`ashcombe`: accepted / stalled /
+  refused, +10 suspicion if you accuse him). Reyes calls about Simon Hale at the
+  Washington Ledger (`reyes_press`). Case file **ROLLOVER** opens.
+- **Night 9 — Thu Dec 23** *(built)*. Change freeze. Calloway gives a fax number
+  only she reads. At 01:30 LANTERN opens the **Outbox**. **Branch:** send the
+  packet to the FBI, the press (needs `reyes_press`), LANTERN, Ashcombe (needs
+  `ashcombe`), or wipe it all. `act2_choice` = fbi / press / lantern / ashcombe /
+  none, `packet_strength` = case files confirmed (0–5). Each choice gets its own
+  response call or message. End of Act II.
 
 **Act III — ROLLOVER** (Dec 31, 22:00 → Jan 1, 01:00). The facility on Y2K
 watch. Near real-time finale at the console: the 0047 countdown, the transfer
@@ -233,18 +261,54 @@ terminal tools, out-of-scope lookups, lying to Security. Falls slowly on clean
 nights. Shown as the session monitor eye in the tray. 40: Security notice.
 70: audit interview. 100: `detained`.
 
-**Notes / evidence.** Items copied from logs, mail, records. In Act II they slot
-into deduction questions on the evidence board.
+**Notes / evidence.** Items copied from logs, mail, records. Copying is how you
+remember; the Board is how you prove.
+
+**Evidence board** (`content/board.ts`, `apps/Board.tsx`, Night 5+). Five case
+files, each a few sentences with blanks (selects over a shared noun list). A case
+is confirmed only when **every** blank in it is right, so guessing one blank at a
+time doesn't work. Files unseal as the story reaches them:
+
+| Case | Opens | Answer, in short |
+|---|---|---|
+| 1 · The Badge | Night 5 | 0417 = Whitlock, died 10/14; B3 east airlock ~3 a.m. under camera work orders; the user is Ashcombe |
+| 2 · The Program | Night 6 | not a vaccine program, EV-31; kept in F-12; 300 g out on 11/30, signed by Ashcombe |
+| 3 · The Defector | the fax (N7) | Whitlock was Vlasko; defected 1993 from Kalnitsa; died because he was about to testify |
+| 4 · LANTERN | the fax (N7) | writes the day first; works for the Orvessan Directorate; wants the EV-31 stock |
+| 5 · Rollover | Night 8 | midnight: 0047 wipes; 0058 moves F-12 to the offshore lab; signed by Ashcombe and Varga |
+
+After two failed confirms, **Ask LANTERN** fixes one wrong blank (`flags.hints`
+counts these; LANTERN remembers). Confirmed cases set `case_<id>` and add to
+`solved`, which becomes the packet's strength.
+
+**Outbox** (Night 9, after LANTERN opens it). Pick one recipient, confirm, and the
+choice is final: `act2_choice`, `packet_strength` (cases confirmed) and
+`packet_notes` (notes held). Recipients unlock from earlier choices: the FBI
+needs Calloway's call, the press needs Reyes's offer, the Deputy Director needs
+Ashcombe's offer; LANTERN and "no one" are always there.
+
+**Story alerts** (`AlertTicket`): a queue item with no right answer, only
+options. Each sets `flags[t.flag]` and is shown on the report with the choice.
+
+**Sessions** (Logs, Night 5+ as lead): a session audit that shows who read what,
+including Ray's floppy export and `svc_recsys` reading your notes.
+
+**Faxes** (`MailDef.fax`): a mail rendered as thermal paper with a halftone
+photo; foreign faxes use DD/MM dates.
 
 **Video calls** (`CallDef`): ring until answered, grainy talking portrait, typed
 lines with per-character voice blips (no recordings), choices whose `Effect`s set
-flags / suspicion / notes. Calls and messenger popups pause the clock.
+flags / suspicion / notes. Calls and messenger popups pause the clock. A call with
+`video: false` is **voice only** (LANTERN): no picture, a waveform, "VIDEO
+DISABLED BY CALLER". Callers outside the directory (Calloway) live in
+`CONTACTS`.
 
 **Suspicion thresholds** (`content/global.ts`): 40 → Security notice email (once);
 70 → Pike's interview call (once, choices can lower it); 100 → `detained`.
 
 **Hints.** LANTERN's messages and Reyes's call carry the hints in Act I. From Act II,
-an optional "Ask LANTERN" on deduction puzzles. Hints are always correct.
+an optional "Ask LANTERN" on case files after two failed confirms. Hints are
+always correct, and LANTERN counts them.
 
 **Flags.** Story choices are `flags` (e.g. `n1_whitlock: logged|escalated|ignored`,
 `n1_copied_log: true`).
@@ -307,8 +371,10 @@ safe-area aware. Desktop gets draggable windows.
 2. **M2 (done):** Nights 2–4: CHANGE and RECORDS tickets, binder tabs, video
    calls, the Terminal tape restore, the letter, suspicion thresholds and the
    `detained` ending, per-night dawns and reports. Act I complete.
-3. **M3:** Act II systems (evidence board, video calls, acting lead), Nights 5–7.
-4. **M4:** Nights 8–9, Act II branch, all branches wired.
+3. **M3 (done):** Act II systems: evidence board, outbox, session audit, faxes,
+   voice-only calls, story alerts, the night-lead role. Nights 5–7.
+4. **M4 (done):** Nights 8–9, the Act II branch (five recipients) with response
+   calls and messages, Act II dawns, report remarks and end card.
 5. **M5:** Act III Rollover and every ending. Polish, music integration.
 
 ## 11. Clue ledger
@@ -331,3 +397,10 @@ safe-area aware. Desktop gets draggable windows.
 | Reyes: "he wasn't from here" | Whitlock was Teodor Vlasko (Act II) |
 | Early tape rotation request from Ashcombe's office (N4) | They knew the drafts were on the tapes |
 | The letter: "the last night of the year" | RECSYS-Y2K-0047 and the Rollover transfer |
+| Session audit: Ray exported 0417 to a floppy (N5) | Ray is suspended for it; the floppy matters in Act III |
+| `svc_recsys` read your NOTES.TXT (N5) | Ashcombe's office watches you through RECSYS |
+| F-12 sensor log: DOOR OPEN 03:13:02 on 11/30 (N6) | Matches the 0417 swipe and the 300 g variance |
+| Ashcombe asks for your personnel file (N6) | He is checking you before the offer (N8) |
+| Logon failures from ADM-2F-PC14 (N6) | Someone in Administration wants into your files (Act III) |
+| The fax: Vlasko's photo, DD/MM dates (N7) | Whitlock was Vlasko; LANTERN is the Directorate |
+| OPS-Y2K-0058 on the calendar, 12/31 23:30 (N8) | The transfer truck at Gate 1 (Act III) |

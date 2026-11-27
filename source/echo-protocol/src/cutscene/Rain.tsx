@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
-/** Canvas rain streaks. density 0..1. Cheap enough for phones. */
-export function Rain({ density }: { density: number }) {
+/** Canvas rain streaks (or slow snow). density 0..1. Cheap enough for phones. */
+export function Rain({ density, snow = false }: { density: number; snow?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = ref.current;
@@ -25,12 +25,31 @@ export function Rain({ density }: { density: number }) {
       x: Math.random() * w,
       y: Math.random() * h,
       l: 10 + Math.random() * 26,
-      v: 9 + Math.random() * 10,
-      a: 0.08 + Math.random() * 0.22,
+      v: snow ? 0.6 + Math.random() * 1.4 : 9 + Math.random() * 10,
+      a: snow ? 0.25 + Math.random() * 0.5 : 0.08 + Math.random() * 0.22,
+      r: 0.8 + Math.random() * 2.2,
+      p: Math.random() * Math.PI * 2,
     }));
     let raf = 0;
     const frame = () => {
       ctx.clearRect(0, 0, w, h);
+      if (snow) {
+        for (const d of drops) {
+          ctx.fillStyle = `rgba(233,223,200,${d.a})`;
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fill();
+          d.p += 0.02;
+          d.y += d.v;
+          d.x += Math.sin(d.p) * 0.6 - 0.25;
+          if (d.y > h + 4) {
+            d.y = -4;
+            d.x = Math.random() * (w + 40);
+          }
+        }
+        raf = requestAnimationFrame(frame);
+        return;
+      }
       ctx.lineWidth = 1.2;
       ctx.lineCap = 'round';
       for (const d of drops) {
@@ -53,7 +72,7 @@ export function Rain({ density }: { density: number }) {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', resize);
     };
-  }, [density]);
+  }, [density, snow]);
   if (density <= 0) return null;
   return <canvas ref={ref} className="rain" aria-hidden="true" />;
 }

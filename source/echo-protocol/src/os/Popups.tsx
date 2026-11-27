@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { closePopup, dismissIntro, dismissNotice, finishShift, flushSave, getState, nightDef, restartNight, setSettings, useGame, useSettings } from '../engine/store';
-import { clockAt, loginName } from '../engine/text';
-import { setUi, useUi, resetUi } from './ui';
+import { clockAt, endClock, loginName } from '../engine/text';
+import { openApp, setUi, useUi, resetUi } from './ui';
 import { InfoIcon, WarnIcon } from '../art/icons';
 import { audio } from '../engine/audio';
 
@@ -34,14 +34,14 @@ export function NetSendPopup() {
   const def = nightDef();
   const ns = def.netsends.find((x) => x.id === popup);
   if (!ns) return null;
-  const { date, h, m } = clockAt(def, ns.at);
+  const { date, h, m } = clockAt(def, getState().night.minute);
   const [mm, dd, yy] = date.split('/');
   const stamp = `${Number(mm)}/${Number(dd)}/${yy} ${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
   return (
     <div className="scrim">
-      <div className="dialog netsend" role="alertdialog" aria-label="Messenger Service">
+      <div className={`dialog netsend ${ns.alarm ? 'alarm' : ''}`} role="alertdialog" aria-label={ns.alarm ? 'SYSCON alarm' : 'Messenger Service'}>
         <div className="win-title">
-          <span className="t">Messenger Service</span>
+          <span className="t">{ns.alarm ? 'SYSCON · Alarm' : 'Messenger Service'}</span>
         </div>
         <div className="dialog-body">
           <span className="ico">
@@ -55,6 +55,17 @@ export function NetSendPopup() {
           </div>
         </div>
         <div className="dialog-actions">
+          {ns.alarm && (
+            <button
+              className="btn"
+              onClick={() => {
+                closePopup();
+                openApp('syscon');
+              }}
+            >
+              Open SYSCON
+            </button>
+          )}
           <button className="btn" autoFocus onClick={closePopup}>
             OK
           </button>
@@ -215,8 +226,8 @@ export function EndShift() {
   return (
     <div className="end-shift">
       <div>
-        <h2>07:00</h2>
-        <div>SHIFT COMPLETE · DAY SHIFT HAS THE CONSOLE</div>
+        <h2>{endClock(nightDef()).time}</h2>
+        <div>{nightDef().endLine ?? 'SHIFT COMPLETE · DAY SHIFT HAS THE CONSOLE'}</div>
         <div style={{ opacity: 0.7, marginBottom: 22 }}>Logging off {profile ? loginName(profile) : 'operator'}…</div>
         <button className="ghost" onClick={finishShift}>
           Clock out

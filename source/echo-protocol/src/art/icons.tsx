@@ -131,6 +131,30 @@ export const TerminalIcon = ({ className }: P) => (
   </S>
 );
 
+export const BoardIcon = ({ className }: P) => (
+  <S className={className}>
+    <rect x="3" y="5" width="26" height="22" fill="#a8743f" stroke={ink} strokeWidth="2" />
+    <rect x="6" y="8" width="9" height="7" fill={paper} stroke={ink} strokeWidth="1" />
+    <rect x="17" y="10" width="9" height="8" fill={paper} stroke={ink} strokeWidth="1" />
+    <rect x="8" y="17" width="9" height="7" fill={paper} stroke={ink} strokeWidth="1" />
+    <path d="M10.5 9 L21.5 11 L12.5 18" fill="none" stroke={red} strokeWidth="1.2" />
+    <circle cx="10.5" cy="9" r="1.6" fill={red} />
+    <circle cx="21.5" cy="11" r="1.6" fill={red} />
+    <circle cx="12.5" cy="18" r="1.6" fill={red} />
+  </S>
+);
+
+export const SysconIcon = ({ className }: P) => (
+  <S className={className}>
+    <rect x="3" y="4" width="26" height="20" fill="#16201a" stroke={ink} strokeWidth="2" />
+    <path d="M6 18 L10 13 L14 15 L18 9 L22 12 L26 7" fill="none" stroke="#5fd17a" strokeWidth="2" />
+    <circle cx="8" cy="21" r="1.6" fill="#5fd17a" />
+    <circle cx="13" cy="21" r="1.6" fill={amber} />
+    <circle cx="18" cy="21" r="1.6" fill={red} />
+    <rect x="9" y="24" width="14" height="4" fill={putty} stroke={ink} strokeWidth="1.5" />
+  </S>
+);
+
 export const APP_ICONS: Record<AppId, (p: P) => React.ReactElement> = {
   queue: QueueIcon,
   directives: DirectivesIcon,
@@ -139,6 +163,8 @@ export const APP_ICONS: Record<AppId, (p: P) => React.ReactElement> = {
   personnel: PersonnelIcon,
   notes: NotesIcon,
   terminal: TerminalIcon,
+  board: BoardIcon,
+  syscon: SysconIcon,
 };
 
 export const APP_NAMES: Record<AppId, string> = {
@@ -149,4 +175,9 @@ export const APP_NAMES: Record<AppId, string> = {
   personnel: 'Personnel',
   notes: 'Notes',
   terminal: 'Terminal',
+  board: 'Board',
+  syscon: 'SYSCON',
 };
+
+/** Dock labels when eight apps share a phone's width. */
+export const APP_SHORT: Partial<Record<AppId, string>> = { directives: 'Rules', personnel: 'Staff' };

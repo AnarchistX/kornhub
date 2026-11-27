@@ -7,7 +7,7 @@ import { audio } from '../engine/audio';
 import { openApp, setUi, useUi } from './ui';
 import { Window } from './Window';
 import { EndShift, IntroSticky, MenuDialog, NetSendPopup, Notices } from './Popups';
-import { APP_ICONS, APP_NAMES, EyeIcon, MenuIcon, SentinelMark } from '../art/icons';
+import { APP_ICONS, APP_NAMES, APP_SHORT, EyeIcon, MenuIcon, SentinelMark } from '../art/icons';
 import { QueueApp } from '../apps/Queue';
 import { DirectivesApp } from '../apps/Directives';
 import { MailApp } from '../apps/Mail';
@@ -16,6 +16,9 @@ import { PersonnelApp } from '../apps/Personnel';
 import { NotesApp } from '../apps/Notes';
 import { TerminalApp } from '../apps/Terminal';
 import { CallPopup } from './Call';
+import { BoardApp } from '../apps/Board';
+import { SysconApp } from '../apps/Syscon';
+import { AppGuard } from './Crash';
 
 const ORDER: AppId[] = ['queue', 'directives', 'mail', 'logs', 'personnel', 'notes'];
 
@@ -35,6 +38,10 @@ function AppContent({ app, compact }: { app: AppId; compact: boolean }) {
       return <NotesApp />;
     case 'terminal':
       return <TerminalApp compact={compact} />;
+    case 'board':
+      return <BoardApp />;
+    case 'syscon':
+      return <SysconApp compact={compact} />;
   }
 }
 
@@ -54,7 +61,7 @@ function useCounts() {
   const fresh = useGame((s) => s.night.newDirectives.length);
   const pending = def.tickets.filter((t) => arrived.includes(t.id) && !results[t.id]).length;
   const unread = mails.filter((m) => !read.includes(m)).length;
-  return { queue: pending, mail: unread, directives: fresh, logs: 0, personnel: 0, notes: 0, terminal: 0 } as Record<AppId, number>;
+  return { queue: pending, mail: unread, directives: fresh, logs: 0, personnel: 0, notes: 0, terminal: 0, board: 0, syscon: 0 } as Record<AppId, number>;
 }
 
 export function Desktop() {
@@ -70,8 +77,12 @@ export function Desktop() {
   const queueSel = useUi((u) => u.queueSel);
   const eyeFlash = useUi((u) => u.eyeFlash);
   const counts = useCounts();
-  const terminal = useGame((s) => !!s.flags.terminal_unlocked);
-  const apps: AppId[] = terminal ? [...ORDER, 'terminal'] : ORDER;
+  const nightN = useGame((s) => s.night.n);
+  const terminal = useGame((s) => !!s.flags.terminal_unlocked) && nightN === 4;
+  const syscon = useGame((s) => !!s.flags.r_syscon);
+  const sysconAlarm = useGame((s) => !!s.flags.r_ov || s.flags.r_hvac === 'fault');
+  const apps: AppId[] = [...ORDER, ...(terminal ? (['terminal'] as AppId[]) : []), ...(nightN >= 5 ? (['board'] as AppId[]) : []), ...(syscon ? (['syscon'] as AppId[]) : [])];
+  const boardNew = useGame((s) => s.night.n >= 5 && !s.flags.board_seen);
 
   useShiftClock(menu || !!confirm || !introDone);
 
@@ -105,7 +116,7 @@ export function Desktop() {
 
   const secret = active === 'queue' && queueSel === 'n1t7';
   const pulse = (app: AppId) =>
-    introDone && ((app === 'terminal' && !wins.some((w) => w.app === 'terminal') && active !== 'terminal') || (app === 'mail' && !welcomeRead) || (app === 'queue' && welcomeRead && counts.queue > 0 && !wins.some((w) => w.app === 'queue') && !(compact && active === 'queue')));
+    introDone && ((app === 'syscon' && (sysconAlarm || (!wins.some((w) => w.app === 'syscon') && active !== 'syscon'))) || (app === 'board' && boardNew) || (app === 'terminal' && !wins.some((w) => w.app === 'terminal') && active !== 'terminal') || (app === 'mail' && !welcomeRead) || (app === 'queue' && welcomeRead && counts.queue > 0 && !wins.some((w) => w.app === 'queue') && !(compact && active === 'queue')));
 
   const open = (app: AppId) => {
     if (compact) {
@@ -149,14 +160,20 @@ export function Desktop() {
               <MenuIcon />
             </button>
           </div>
-          <div className="app-body">{active && <AppContent app={active} compact />}</div>
+          <div className="app-body">
+            {active && (
+              <AppGuard key={active} name={active}>
+                <AppContent app={active} compact />
+              </AppGuard>
+            )}
+          </div>
           <nav className={`dock ${apps.length > 6 ? 'seven' : ''}`} aria-label="Apps" style={{ gridTemplateColumns: `repeat(${apps.length}, 1fr)` }}>
             {apps.map((app) => {
               const I = APP_ICONS[app];
               return (
                 <button key={app} className={`dock-btn ${active === app ? 'on' : ''} ${pulse(app) ? 'pulse' : ''}`} onClick={() => open(app)}>
                   <I />
-                  {APP_NAMES[app]}
+                  {(apps.length > 7 && APP_SHORT[app]) || APP_NAMES[app]}
                   {counts[app] > 0 && <span className="count">{counts[app]}</span>}
                 </button>
               );
@@ -187,7 +204,9 @@ export function Desktop() {
             </div>
             {wins.map((w) => (
               <Window key={w.app} win={w} active={active === w.app}>
-                <AppContent app={w.app} compact={false} />
+                <AppGuard name={w.app}>
+                  <AppContent app={w.app} compact={false} />
+                </AppGuard>
               </Window>
             ))}
             <Notices />

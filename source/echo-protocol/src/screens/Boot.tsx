@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { go, nightDef, useGame } from '../engine/store';
-import { loginName } from '../engine/text';
+import { startClock, loginName } from '../engine/text';
 import { audio } from '../engine/audio';
 import { SentinelMark } from '../art/icons';
 
@@ -127,7 +127,7 @@ export function Boot() {
                 <p>· All activity is logged under your user name ({login}) and may be audited at any time.</p>
                 <p>· Unauthorized use may result in disciplinary action and civil and criminal penalties.</p>
                 <p style={{ color: 'var(--text-dim)', fontSize: 12 }}>
-                  Session opened {def.date} 23:00 · Night Operations
+                  Session opened {def.date} {startClock(def)} · Night Operations
                 </p>
               </div>
               <div className="dialog-actions">

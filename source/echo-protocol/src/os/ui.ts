@@ -17,7 +17,7 @@ interface UiState {
   active: AppId | null; // focused window (desktop) or visible app (compact)
   personnel: string | null; // selected person id
   logFilter: string;
-  logTab: 'badge' | 'cams';
+  logTab: 'badge' | 'cams' | 'sessions';
   queueSel: string | null;
   mailSel: string | null;
   menu: boolean;
@@ -77,6 +77,10 @@ function defaultGeom(app: AppId, index: number): Omit<Win, 'app' | 'z'> {
       return { x: Math.max(104, W - 520 - 30), y: 60 + off, w: clampW(500), h: clampH(520) };
     case 'terminal':
       return { x: 130 + off, y: 30 + off, w: clampW(860), h: clampH(600) };
+    case 'board':
+      return { x: 120 + off, y: 20 + off, w: clampW(900), h: clampH(660) };
+    case 'syscon':
+      return { x: Math.max(104, W - 760 - 24), y: 14, w: clampW(760), h: clampH(700) };
   }
 }
 

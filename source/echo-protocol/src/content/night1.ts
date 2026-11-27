@@ -12,6 +12,7 @@ const whitlockLine = (s: GameState) => {
 
 export const NIGHT1: NightDef = {
   n: 1,
+  act: 'ACT I · NIGHT SHIFT',
   weekday: 'Monday',
   date: D,
   nextDate: N,
@@ -53,10 +54,9 @@ export const NIGHT1: NightDef = {
       camera: () => ({ cam: 'b3east', date: '12/07/99', time: '03:12:44', unavailable: 'SCHEDULED MAINTENANCE 03:11–03:14\nWO-7731 · REQUESTED BY: [RESTRICTED]' }),
       flag: 'n1_whitlock',
       options: [
-        { value: 'log', label: 'Log as reader fault' },
-        { value: 'escalate', label: 'Escalate to Security' },
+        { value: 'logged', label: 'Log as reader fault', done: '> LOGGED AS READER FAULT · KI-114 · CLOSED' },
+        { value: 'escalated', label: 'Escalate to Security', danger: true, done: '> ESCALATED TO SECURITY · SEC-4471 · AWAITING REVIEW' },
       ],
-      done: { log: '> LOGGED AS READER FAULT · KI-114 · CLOSED', escalate: '> ESCALATED TO SECURITY · SEC-4471 · AWAITING REVIEW' },
     },
     { kind: 'access', id: 'n1t10', ref: 'AR-1207-10', at: 285, requester: 'marchetti', area: 'OPS', date: N, window: '06:30–07:30', purpose: 'Early start, Y2K patch staging', approver: 'tolliver' },
     { kind: 'access', id: 'n1t11', ref: 'AR-1207-11', at: 315, requester: 'odom', area: 'B3', date: N, window: '05:00–07:00', purpose: 'Media prep for Dr. Reyes', approver: 'sato' },

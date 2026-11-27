@@ -31,7 +31,32 @@ function Corridor() {
   );
 }
 
-function Gate() {
+/** Convoy HL-7: a refrigerated box truck idling at the barrier, headlights on. */
+function Truck() {
+  return (
+    <g>
+      <ellipse cx="128" cy="196" rx="118" ry="10" fill={G1} opacity="0.8" />
+      <rect x="40" y="86" width="150" height="96" fill={G2} />
+      <rect x="40" y="86" width="150" height="96" fill="none" stroke={G3} strokeWidth="1.5" />
+      <rect x="48" y="96" width="62" height="12" fill={G3} />
+      <text x="50" y="106" fontSize="9" fontFamily="IBM Plex Mono, monospace" fill={G1} fontWeight="700">
+        HALVARD-LOWE
+      </text>
+      <rect x="52" y="116" width="128" height="6" fill={G3} opacity="0.5" />
+      <rect x="150" y="70" width="36" height="16" fill={G3} />
+      <path d="M190 112 L232 112 L246 138 L246 182 L190 182Z" fill={G2} stroke={G3} strokeWidth="1.5" />
+      <path d="M196 118 L228 118 L238 136 L196 136Z" fill={G1} />
+      <circle cx="78" cy="184" r="13" fill={G1} stroke={G3} strokeWidth="2" />
+      <circle cx="214" cy="184" r="13" fill={G1} stroke={G3} strokeWidth="2" />
+      <circle cx="243" cy="160" r="9" fill="#e9efe6" />
+      <circle cx="243" cy="160" r="26" fill="#e9efe6" opacity="0.22" />
+      <circle cx="243" cy="160" r="48" fill="#e9efe6" opacity="0.08" />
+      <path d="M36 172 q-10 -18 2 -30 q12 -12 -2 -28" stroke={G3} strokeWidth="6" fill="none" opacity="0.35" strokeLinecap="round" />
+    </g>
+  );
+}
+
+function Gate({ truck }: { truck?: boolean }) {
   return (
     <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
       <rect width="400" height="300" fill={G1} />
@@ -51,6 +76,7 @@ function Gate() {
         <path key={i} d={`M${i * 26} 60 L${i * 26 + 13} 190`} stroke={G3} strokeWidth="1" opacity="0.6" />
       ))}
       <path d="M0 60 H400" stroke={G3} strokeWidth="2" />
+      {truck && <Truck />}
     </svg>
   );
 }
@@ -92,7 +118,7 @@ function Airlock({ figure }: { figure?: boolean }) {
   );
 }
 
-export function Cctv({ cam, date, time, unavailable, figure }: { cam: CamId; date: string; time: string; unavailable?: string; figure?: boolean }) {
+export function Cctv({ cam, date, time, unavailable, figure, truck }: { cam: CamId; date: string; time: string; unavailable?: string; figure?: boolean; truck?: boolean }) {
   return (
     <figure className="cctv" style={{ margin: 0 }}>
       {unavailable ? (
@@ -104,7 +130,7 @@ export function Cctv({ cam, date, time, unavailable, figure }: { cam: CamId; dat
           </div>
         </>
       ) : cam === 'gate' ? (
-        <Gate />
+        <Gate truck={truck} />
       ) : cam === 'corridor' ? (
         <Corridor />
       ) : (

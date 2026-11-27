@@ -39,9 +39,15 @@ function CallWindow({ call }: { call: CallDef }) {
   const scroller = useRef<HTMLDivElement>(null);
   const node = call.nodes[nodeId];
   const text = live ? textOf(node) : '';
-  const pitch = PITCH[call.from] ?? (caller?.photo.sex === 'f' ? 260 : 170);
+  const pitch = PITCH[call.from] ?? (call.from === '' ? 200 : caller?.photo.sex === 'f' ? 260 : 170);
   const onChar = useCallback(() => audio.blip(pitch), [pitch]);
   const [typed, done, finish] = useTyped(text, CHAR_MS[settings.textSpeed] ?? 26, onChar);
+  // A tap meant for "Skip" must not land on whatever replaces it (End call, or a choice).
+  const readyAt = useRef(0);
+  useEffect(() => {
+    if (done) readyAt.current = performance.now() + 350;
+  }, [done, nodeId]);
+  const ready = () => performance.now() >= readyAt.current;
 
   // Ring until answered.
   useEffect(() => {
@@ -87,8 +93,10 @@ function CallWindow({ call }: { call: CallDef }) {
     closePopup();
   };
 
-  const name = caller ? `${caller.first.split(' ')[0]} ${caller.last}` : 'Unknown caller';
-  const role = caller ? caller.title : '';
+  const name = call.name ?? (caller ? `${caller.first.split(' ')[0]} ${caller.last}` : 'Unknown caller');
+  const role = call.role ?? (caller ? caller.title : '');
+  const voiceOnly = call.video === false || !caller;
+  const label = (call.name ?? caller?.last ?? 'CALLER').toUpperCase();
   const mm = String(Math.floor(secs / 60)).padStart(2, '0');
   const ss = String(secs % 60).padStart(2, '0');
 
@@ -100,9 +108,19 @@ function CallWindow({ call }: { call: CallDef }) {
         </div>
         <div className="vtc-body">
           <div className={`vtc-feed ${live ? 'on' : 'ringing'}`}>
-            {caller && (
+            {caller && !voiceOnly && (
               <div className="vtc-face">
                 <Portrait spec={caller.photo} title={name} talking={live && !done} />
+              </div>
+            )}
+            {voiceOnly && (
+              <div className="vtc-novideo">
+                <div>VIDEO DISABLED BY CALLER</div>
+                <div className={`wave ${live && !done ? 'on' : ''}`} aria-hidden="true">
+                  {Array.from({ length: 16 }, (_, i) => (
+                    <i key={i} style={{ animationDelay: `${(i * 53) % 400}ms` }} />
+                  ))}
+                </div>
               </div>
             )}
             <div className="vtc-osd top">
@@ -120,13 +138,13 @@ function CallWindow({ call }: { call: CallDef }) {
               {!live && <div className="vtc-line sys">Incoming secure video call from {call.place}.</div>}
               {log.map((l, i) => (
                 <div key={i} className={`vtc-line ${l.who}`}>
-                  <span className="who">{l.who === 'you' ? 'YOU' : caller?.last.toUpperCase()}</span>
+                  <span className="who">{l.who === 'you' ? 'YOU' : label}</span>
                   {l.text}
                 </div>
               ))}
               {live && (
                 <div className={`vtc-line ${node.who}`} onClick={advance}>
-                  <span className="who">{node.who === 'you' ? 'YOU' : caller?.last.toUpperCase()}</span>
+                  <span className="who">{node.who === 'you' ? 'YOU' : label}</span>
                   {typed}
                   {!done && <span className="caret">▌</span>}
                 </div>
@@ -135,6 +153,7 @@ function CallWindow({ call }: { call: CallDef }) {
             <div className="vtc-actions">
               {!live ? (
                 <button
+                  key="answer"
                   className="btn big approve"
                   autoFocus
                   onClick={() => {
@@ -146,15 +165,16 @@ function CallWindow({ call }: { call: CallDef }) {
                   <span>Answer</span>
                 </button>
               ) : !done ? (
-                <button className="btn" onClick={finish}>
+                <button key="skip" className="btn" onClick={finish}>
                   <span>Skip ▸</span>
                 </button>
               ) : node.choices ? (
                 node.choices.map((c) => (
                   <button
-                    key={c.to + c.text}
+                    key={`${nodeId}:${c.to}:${c.text}`}
                     className="btn choice"
                     onClick={() => {
+                      if (!ready()) return;
                       audio.play('click');
                       if (c.effect) applyEffect(c.effect);
                       goTo(c.to, c.text);
@@ -164,11 +184,11 @@ function CallWindow({ call }: { call: CallDef }) {
                   </button>
                 ))
               ) : node.end ? (
-                <button className="btn big deny" onClick={hangUp}>
+                <button key="end" className="btn big deny" onClick={() => ready() && hangUp()}>
                   <span>End call</span>
                 </button>
               ) : (
-                <button className="btn big" onClick={advance}>
+                <button key={`next:${nodeId}`} className="btn big" onClick={() => ready() && advance()}>
                   <span>Continue ▸</span>
                 </button>
               )}
