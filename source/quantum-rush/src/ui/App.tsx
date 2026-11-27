@@ -100,15 +100,19 @@ function Title({ save, onPlay, onCustom, onSettings }: { save: SaveData; onPlay:
   const canvas = useRef<HTMLCanvasElement>(null);
   const [armed, setArmed] = useState(() => audio.ctx !== null);
   const demoId = useMemo(() => {
+    const forced = params.get('demo');
+    if (forced && LEVELS.some((l) => l.id === forced)) return forced;
     const open = LEVELS.filter((_, i) => i === 0 || progressOf(save, LEVELS[i - 1].id).cleared);
     return open[Math.floor(Math.random() * open.length)].id;
   }, [save]);
+  const og = params.has('og');
   useEffect(() => {
     const el = canvas.current!;
     const level = getLevel(demoId);
     const skin = SKINS.find((s) => s.id === save.skin) ?? SKINS[0];
     const trail = TRAILS.find((t) => t.id === save.trail) ?? TRAILS[0];
-    const g = new Game(el, level, { mode: 'demo', skin, trail, reduced: true, shardsSaved: 0, startAt: level.song.bar0 + (60 / level.song.bpm) * 4 * 8 });
+    const bars = Number(params.get('bar') ?? 8);
+    const g = new Game(el, level, { mode: 'demo', skin, trail, reduced: true, shardsSaved: 0, startAt: level.song.bar0 + (60 / level.song.bpm) * 4 * bars });
     void g.start();
     const onResize = () => g.renderer.resize();
     window.addEventListener('resize', onResize);
@@ -122,16 +126,18 @@ function Title({ save, onPlay, onCustom, onSettings }: { save: SaveData; onPlay:
     <div className="screen title">
       <canvas ref={canvas} className="demo" />
       <div className="title-shade" />
-      <a className="home" href="/" onClick={() => audio.sfx('back')}>
-        ← KXRNAGE
-      </a>
-      <div className="title-body">
+      {!og && (
+        <a className="home" href="/" onClick={() => audio.sfx('back')}>
+          ← KXRNAGE
+        </a>
+      )}
+      <div className={`title-body ${og ? 'og' : ''}`}>
         <h1 className="logo">
           <span>QUANTUM</span>
           <span>RUSH</span>
         </h1>
         <p className="tag">One button. Ten songs by Kxrnage. Every jump on the beat.</p>
-        {!armed ? (
+        {og ? null : !armed ? (
           <button
             className="cta"
             onClick={() => {
@@ -156,9 +162,11 @@ function Title({ save, onPlay, onCustom, onSettings }: { save: SaveData; onPlay:
             </button>
           </nav>
         )}
-        <p className="stats">
-          {clears(save)}/10 cleared · {total}/30 shards
-        </p>
+        {!og && (
+          <p className="stats">
+            {clears(save)}/10 cleared · {total}/30 shards
+          </p>
+        )}
       </div>
     </div>
   );

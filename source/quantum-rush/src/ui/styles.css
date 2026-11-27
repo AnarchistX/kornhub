@@ -246,6 +246,24 @@ button:disabled {
     transform: scale(1.05);
   }
 }
+.title-body.og {
+  justify-content: flex-start;
+  padding-top: 34px;
+  gap: 10px;
+}
+.title-body.og .logo span {
+  font-size: 104px;
+}
+.title-body.og .logo span + span {
+  font-size: 132px;
+}
+.title-body.og .tag {
+  font-size: 24px;
+}
+.title-body.og ~ .title-shade,
+.title:has(.og) .title-shade {
+  background: linear-gradient(180deg, rgba(6, 4, 14, 0.55), rgba(6, 4, 14, 0.1) 55%, rgba(6, 4, 14, 0) 70%);
+}
 .stats {
   margin: 0;
   font-size: 12px;

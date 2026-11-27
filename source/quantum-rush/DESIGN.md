@@ -63,18 +63,22 @@ kick pulse above as the beat and subdivide it.
 Ordered easy → hard. Early levels are cuts that end on a phrase; levels 6–10 play the
 full song. Forms are introduced one at a time.
 
-| # | Level | Song credit | Length | New |
-|---|---|---|---|---|
-| 1 | Lumen Deep | Bioluminescence Protocol - Kxrnage | bars 0–32 | Spark (jump) |
-| 2 | Siren Drift | Astral Siren's Call - Kxrnage | bars 0–48 | pulse nodes, step blocks |
-| 3 | Neon Pursuit | Digital Pursuit - Kxrnage | bars 0–40 | boost plates, pits, speed gates |
-| 4 | Genesis Bloom | System Genesis - Kxrnage | bars 0–56 | **Flux** (gravity flip) |
-| 5 | Lattice Run | Digital Lattice - Kxrnage | bars 0–48 | **Comet** (hold to climb) |
-| 6 | Velvet Static | Quantum Seduction - Kxrnage | full | beat lasers, forms mixed |
-| 7 | First Light | Digital Awakening - Kxrnage | full | **Blink** (phase on the beat) |
-| 8 | Redline | Digital Velocity - Kxrnage | full | top speed, rotors |
-| 9 | Silkwave | Digital Silk Stream - Kxrnage | full | long form chains |
-| 10 | Singularity | Quantum Rush - Kxrnage | full | everything |
+| # | Level (id) | Song credit | Length | Window | New |
+|---|---|---|---|---|---|
+| 1 | Lumen Deep (`lumen`) | Bioluminescence Protocol - Kxrnage | bars 0–32, 1:14 | ±90 ms | Spark: thorns, steps, gaps, boost, shards |
+| 2 | Siren Drift (`siren`) | Astral Siren's Call - Kxrnage | bars 0–48, 1:38 | ±85 ms | pulse nodes, rotors |
+| 3 | Neon Pursuit (`pursuit`) | Digital Pursuit - Kxrnage | bars 0–36, 1:29 | ±80 ms | first speed gate (1.24×), beat lasers |
+| 4 | Genesis Bloom (`genesis`) | System Genesis - Kxrnage | bars 0–56, 1:57 | ±75 ms | **Flux** (gravity flip) |
+| 5 | Lattice Run (`lattice`) | Digital Lattice - Kxrnage | bars 0–40, 1:39 | ±70 ms | **Comet** (hold to climb) |
+| 6 | Velvet Static (`velvet`) | Quantum Seduction - Kxrnage | full, 3:20 | ±70 ms | 162 BPM, forms mixed |
+| 7 | First Light (`firstlight`) | Digital Awakening - Kxrnage | full, 2:54 | ±65 ms | **Blink** (phase on the beat) |
+| 8 | Redline (`redline`) | Digital Velocity - Kxrnage | full, 2:03 | ±60 ms | top speed 1.45×, sixteenth-note flux and blink |
+| 9 | Silkwave (`silkwave`) | Digital Silk Stream - Kxrnage | full, 3:31 | ±60 ms | long form chains |
+| 10 | Singularity (`singularity`) | Quantum Rush - Kxrnage | full, 3:45 | ±55 ms | everything |
+
+Levels 1–5 fade the music out two bars after the finish; 6–10 end with the song. Section
+starts follow the analysed song structure: the beat entering, drops (form changes, speed
+gates, palette swaps), breaks (rests, shard routes) and outros.
 
 ## 5. The runner and its forms
 
@@ -84,16 +88,18 @@ Form crystals turn it into:
 
 | Form | Look | Input | Physics |
 |---|---|---|---|
-| **Spark** | round, eyes, antenna | tap: jump · hold: re-jump on landing | fixed arc: apex 2.25 tiles, 0.5 s air |
-| **Flux** | a spinning tri-prism | tap: flip gravity (from a surface) | falls to the far surface in ~0.32 s |
-| **Comet** | an arrowhead with a flame tail | hold: climb · release: dive | ±acceleration, capped vertical speed; slides along walls |
-| **Blink** | a hollow diamond | tap: phase for 0.2 s | ground only; passes through phase walls while phased |
+| **Spark** | round, eyes, antenna | tap: jump · hold: re-jump on landing | fixed arc: apex 2.1 tiles, 0.44 s air (one jump per beat fits up to 130 BPM) |
+| **Flux** | a spinning tri-prism | tap: flip gravity (from a surface) | crosses a 6-tile corridor in ~0.31 s |
+| **Comet** | an arrowhead with a flame tail | hold: climb · release: dive | ±62 tiles/s², capped at 8.6 tiles/s; slides along top and bottom surfaces |
+| **Blink** | a hollow diamond | tap: phase for 0.24 s | ground only; passes through phase walls while phased |
 
 Physics are the same in every level so skill carries over; the music only decides where
-things are. Base speed 10.4 tiles/s; speed gates set 0.8×, 1×, 1.24×, 1.5×.
+things are. Base speed 10.4 tiles/s; speed gates set 1×, 1.24× or 1.45×. Pulse nodes give
+a fresh jump; boost plates launch higher (0.65 s in the air).
 
-Fairness: player hitbox 0.7 × 0.7 inside a 1 × 1 body; hazards use hitboxes smaller than
-their art; a 100 ms jump buffer and 60 ms coyote time.
+Fairness: player hitbox 0.62 × 0.62 inside a 0.8 × 1 body; thorn hitboxes are 36 % wide and
+58 % tall of their art; a 140 ms press buffer and 60 ms coyote time; node taps count within
+1.15 tiles (height weighted at 0.6, so timing matters more than aim).
 
 ## 6. Objects (original look)
 
@@ -122,18 +128,33 @@ and then places geometry around the resulting path:
 3. Keep clearance between the path and every hazard.
 4. Decorate (props, lights, parallax) without collision.
 
-So every level is passable by construction, and on the beat by construction. A
-validator then replays each chart with inputs early and late (±90 ms on easy levels,
-±45 ms on the hardest) and fails the build if any timing within that window dies. The
-same intended inputs drive the title-screen demo and the automated tests.
+So every level is passable by construction, and on the beat by construction. Margins
+scale with speed and with the level's timing window: pits keep ground either side for an
+early or late press, flux thorns start late enough for a slow flip and stop early enough
+for an early one, comet tunnels keep 1.6 tiles of clearance and never dig below the base
+floor, and crystals and gates sit 0.1 s before the downbeat so a press on the drop
+already uses the new form.
 
-Chart rows are one bar each; a step is an eighth note (or a sixteenth with `/16`).
-Spark: `J` jump a thorn · `K` jump two · `U` step up · `D` step down · `G` gap ·
-`N` jump then tap a node · `B` boost plate · `S` shard route · `=` hold (auto re-jump).
-Flux: `F` flip. Comet: `^` press, `v` release. Blink: `W` phase wall. `.` nothing.
+`npx tsx scripts/validate.ts` replays every level: exact, the whole run shifted early and
+late by the level's window, twelve runs with independent per-press jitter of ¾ of the
+window, and each shard route. All ten pass; `scripts/diagnose.ts <id>` maps any failure to
+its bar and step. The same intended inputs drive the title-screen demo.
 
-Endless mode uses the same builder fed by a phrase generator (seeded, getting denser),
-synced to the chosen song and looping it.
+Chart rows are one bar each; a step is an eighth note (`grid: 16` for sixteenths).
+Spark: `J` jump a thorn · `K` two · `L` three · `U` step up · `D` step down · `G` gap ·
+`N` tap a node mid-air (one step after its jump) · `B` boost plate · `S` shard route ·
+`R` jump under a rotor · `X` beat laser. Flux: `F` flip. Comet: `^` press, `v` release.
+Blink: `W` phase wall. `.` nothing.
+
+Spacing the physics allows: two eighths between jumps up to 130 BPM (three at 162); after
+an `N` the next ground action waits for the higher landing; five quiet eighths after `S`;
+flux flips 0.31 s apart, blink walls 0.24 s; every flux section ends on the floor (an
+even number of flips); three-thorn `L` jumps only at 1.24× or faster.
+
+Endless mode runs the same builder on a seeded generator that plans one continuous
+timeline of eighth notes with these spacing rules, cycles the forms in eight-bar
+sections, ramps density and speed, loops the song (and its energy map) every whole bar,
+and builds 160 bars; `scripts/endless.ts` validates 60 generated runs across the songs.
 
 ## 8. Worlds
 
@@ -187,11 +208,18 @@ intensity. *Reduced flashes* replaces flashes with gentle fades.
   restarts and checkpoints start the buffer at an offset.
 - Tracks are served from the site's existing `/assets/sounds/music/` folder.
 - Builds into `/quantum-rush/` at launch (the old game is replaced then).
-- Debug: `?level=N`, `?bot` (autoplay the chart), `?t=seconds` (start at), `?debug`.
+- Debug: `?level=N` (or id), `?bot` (autoplay the chart), `?practice`, `?t=seconds` (start
+  at), `?debug` (exposes the game for real-time tests), `?unlock` (select any level),
+  `?demo=id&bar=N` (title backdrop), `?og` (share-image layout).
+- Assets: `public/` holds the favicon, app icons, manifest and the 1200×630 share image
+  (`og.jpg`, rendered from the title in `?og` mode).
 
-## 12. Roadmap
+## 12. Status
 
-1. Engine: physics, forms, builder, validator, renderer, music clock, SFX.
-2. Menus, saves, practice, endless, customization.
-3. Levels 1–5, then 6–10, each validated by the bot, played on desktop and phone.
-4. Launch: replace `/quantum-rush/`, hub card copy.
+1. Engine: physics, forms, builder, validator, renderer, music clock, SFX: done.
+2. Menus, saves, practice, endless, customization: done.
+3. All ten levels charted and bot-validated; real-time runs against the music clock
+   (input lag ~2 ms), death/restart, pause, practice checkpoints, results and unlocks
+   tested on desktop and emulated phones.
+4. Launch: build with `QR_OUT=../../quantum-rush npx vite build` to replace the old
+   single-file game, and update the hub card.

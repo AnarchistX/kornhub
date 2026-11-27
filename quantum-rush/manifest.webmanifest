@@ -1,0 +1,16 @@
+{
+  "name": "Quantum Rush",
+  "short_name": "Quantum Rush",
+  "description": "A one-button rhythm runner. Ten levels, ten songs by Kxrnage, every jump on the beat.",
+  "start_url": "/quantum-rush/",
+  "scope": "/quantum-rush/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#07060d",
+  "theme_color": "#07060d",
+  "icons": [
+    { "src": "/quantum-rush/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/quantum-rush/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/quantum-rush/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
