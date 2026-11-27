@@ -71,8 +71,11 @@ export class Renderer {
   private objIndex = new Map<Obj, number>();
   private loopBars = 0;
 
-  constructor(public canvas: HTMLCanvasElement) {
-    this.c = canvas.getContext('2d', { alpha: false })!;
+  constructor(
+    public canvas: HTMLCanvasElement,
+    transparent = false,
+  ) {
+    this.c = canvas.getContext('2d', { alpha: transparent })!;
     this.resize();
   }
 
@@ -236,6 +239,68 @@ export class Renderer {
       this.flash = Math.max(0, this.flash - dt * 2.2);
     }
     if (s.showHud && !s.demo) this.hud(s, pal);
+  }
+
+  /** The customize screen: the runner on a transparent canvas, cycling through its four forms. */
+  preview(skin: Skin, trail: Trail, t: number, dt: number): Form {
+    const c = this.c;
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.clearRect(0, 0, this.W, this.H);
+    const vh = 4.4;
+    const ppt = this.H / vh;
+    const forms: Form[] = ['spark', 'flux', 'comet', 'blink'];
+    const form = forms[Math.floor(t / 2.4) % 4];
+    const x = t * 7;
+    let y = 0.9;
+    let vy = 0;
+    let grav: -1 | 1 = -1;
+    let phase = 0;
+    switch (form) {
+      case 'spark': {
+        const ph = (t % 0.55) / 0.55;
+        y = 0.9 + Math.sin(ph * Math.PI) * 1.6;
+        vy = Math.cos(ph * Math.PI) * 9;
+        break;
+      }
+      case 'flux': {
+        const ph = (t % 1.2) / 1.2;
+        const up = ph >= 0.5;
+        const k = Math.min(1, ((ph % 0.5) / 0.5) * 3);
+        const ease = k * k;
+        y = up ? 0.9 + ease * 2.6 : 3.5 - ease * 2.6;
+        vy = k < 1 ? (up ? 12 : -12) : 0;
+        grav = up ? 1 : -1;
+        break;
+      }
+      case 'comet':
+        y = 2.2 + Math.sin(t * 4.2) * 1.1;
+        vy = Math.cos(t * 4.2) * 4.6;
+        break;
+      case 'blink':
+        phase = t % 0.6 < 0.24 ? 0.2 : 0;
+        break;
+    }
+    const v: View = { camX: x - (this.W / ppt) * 0.6, camY: 0, w: this.W / ppt, h: vh, ppt, W: this.W, H: this.H };
+    const X = (wx: number) => (wx - v.camX) * ppt;
+    const Y = (wy: number) => this.H - (wy - v.camY) * ppt;
+    const s = {
+      x,
+      y,
+      vy,
+      form,
+      grav,
+      phase,
+      speed: 1,
+      t,
+      skin,
+      trail,
+      squash: 0,
+      dead: false,
+    } as DrawState;
+    this.drawTrail(s, v, X, Y, dt);
+    this.drawParticles(v, X, Y, dt);
+    this.drawRunner(s, v, X, Y, Math.exp(-((t * 2) % 1) * 6));
+    return form;
   }
 
   private currentPalette(): Palette {
@@ -411,6 +476,10 @@ export class Renderer {
         c.lineTo(r, base);
         c.closePath();
         c.fill();
+        c.strokeStyle = rgb(lighten(pal.thorn, 0.55), 0.9);
+        c.lineWidth = Math.max(1.5, ppt * 0.045);
+        c.lineJoin = 'round';
+        c.stroke();
         // facet
         c.fillStyle = rgb(lighten(pal.thorn, 0.65), 0.55);
         c.beginPath();
@@ -867,8 +936,9 @@ export class Renderer {
         case 'fireflies':
           col = i % 2 ? pal.accent : pal.groundEdge;
           y = y + Math.sin(f.t + i) * v.ppt * 0.5;
-          size *= 1.4;
-          break;
+          size *= 1.1;
+          this.glow(x, y, size * 4, col, a * 0.3);
+          continue;
         case 'embers':
           col = i % 2 ? pal.groundEdge : pal.glow;
           y = v.H - ((tt / life) * v.H) % v.H;

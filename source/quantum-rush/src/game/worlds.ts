@@ -179,14 +179,15 @@ export const WORLDS: Record<string, World> = {
         const x = wx * v.ppt;
         const y = v.H * (0.2 + 0.35 * hash(i * 5)) + Math.sin(f.t * 0.8 + i) * v.ppt * 0.6;
         const r = v.ppt * (0.7 + hash(i * 3) * 0.6) * (1 + f.pulse * 0.12);
-        glowDisc(c, x, y, r * 3, i % 2 ? p.accent : p.thorn, 0.22 + f.pulse * 0.15);
-        c.fillStyle = rgb(lighten(i % 2 ? p.accent : p.thorn, 0.3), 0.85);
+        const jc = mix(p.far, i % 2 ? p.accent : p.glow, 0.55);
+        glowDisc(c, x, y, r * 3, jc, 0.1 + f.pulse * 0.1);
+        c.fillStyle = rgb(jc, 0.5);
         c.beginPath();
         c.arc(x, y, r, Math.PI, 0);
         c.quadraticCurveTo(x + r * 0.5, y + r * 0.35, x, y + r * 0.2);
         c.quadraticCurveTo(x - r * 0.5, y + r * 0.35, x - r, y);
         c.fill();
-        c.strokeStyle = rgb(i % 2 ? p.accent : p.thorn, 0.55);
+        c.strokeStyle = rgb(jc, 0.32);
         c.lineWidth = Math.max(1, v.ppt / 30);
         for (let k = -1; k <= 1; k++) {
           c.beginPath();
@@ -245,14 +246,16 @@ export const WORLDS: Record<string, World> = {
         c.lineTo(x - s * 0.2, y + s * 1.1);
         c.closePath();
         c.fill();
-        c.fillStyle = rgb(lighten(p.accent2, 0.2), 0.9);
+        c.fillStyle = rgb(mix(p.mid, p.accent2, 0.3), 0.7);
         for (let k = 0; k < 3; k++) {
           const cx = x + (k - 1) * s * 0.7;
-          const h = s * (0.8 + hash(i * 4 + k) * 0.9) * (1 + f.pulse * 0.08);
+          const h = s * (0.45 + hash(i * 4 + k) * 0.5) * (1 + f.pulse * 0.08);
           c.beginPath();
-          c.moveTo(cx - s * 0.18, y);
+          c.moveTo(cx - s * 0.3, y);
+          c.lineTo(cx - s * 0.3, y - h * 0.6);
           c.lineTo(cx, y - h);
-          c.lineTo(cx + s * 0.18, y);
+          c.lineTo(cx + s * 0.3, y - h * 0.6);
+          c.lineTo(cx + s * 0.3, y);
           c.fill();
         }
       }
@@ -305,7 +308,7 @@ export const WORLDS: Record<string, World> = {
           c.fillStyle = rgb(color);
           c.fillRect(x, v.H - bh, bw, bh);
           if (par > 0.2) {
-            c.fillStyle = rgb(p.accent2, 0.35);
+            c.fillStyle = rgb(p.accent2, 0.2);
             for (let wy = v.H - bh + v.ppt * 0.4; wy < v.H - v.ppt * 0.5; wy += v.ppt * 0.6) {
               for (let wxx = x + v.ppt * 0.3; wxx < x + bw - v.ppt * 0.3; wxx += v.ppt * 0.5) {
                 if (hash(wxx * 0.13 + wy * 0.71 + i) > 0.62) c.fillRect(wxx, wy, v.ppt * 0.2, v.ppt * 0.25);
@@ -314,9 +317,9 @@ export const WORLDS: Record<string, World> = {
             if (hash(i * 7) > 0.6) {
               const sc = hash(i * 11) > 0.5 ? p.groundEdge : p.thorn;
               const on = 0.55 + 0.45 * (hash(i * 13) > 0.5 ? f.pulse : 1 - f.pulse);
-              c.fillStyle = rgb(sc, on);
+              c.fillStyle = rgb(mix(color, sc, 0.55), on * 0.75);
               c.fillRect(x + bw * 0.15, v.H - bh - v.ppt * 0.9, bw * 0.7, v.ppt * 0.5);
-              glowDisc(c, x + bw * 0.5, v.H - bh - v.ppt * 0.65, bw * 0.8, sc, 0.18 * on);
+              glowDisc(c, x + bw * 0.5, v.H - bh - v.ppt * 0.65, bw * 0.8, sc, 0.1 * on);
             }
           }
           wx += 3;
@@ -366,7 +369,7 @@ export const WORLDS: Record<string, World> = {
             c.stroke();
             if (scale === 1) {
               const lit = (b + k) % 3 === Math.floor(f.t * 2) % 3;
-              glowDisc(c, x + dir * len, by - len * 0.5, v.ppt * 0.5, lit ? p.accent : p.groundEdge, lit ? 0.7 : 0.3);
+              glowDisc(c, x + dir * len, by - len * 0.5, v.ppt * 0.42, lit ? p.accent : p.groundEdge, lit ? 0.42 : 0.16);
             }
           }
         }
@@ -466,8 +469,8 @@ export const WORLDS: Record<string, World> = {
         const x = wx * v.ppt;
         const y = v.H * (0.35 + 0.15 * hash(i * 3));
         const s = v.ppt * (1.6 + hash(i) * 0.8) * (1 + f.pulse * 0.18);
-        glowDisc(c, x, y, s * 2.6, p.accent2, 0.25 + f.pulse * 0.2);
-        c.fillStyle = rgb(p.groundEdge, 0.85);
+        glowDisc(c, x, y, s * 2.6, p.accent2, 0.12 + f.pulse * 0.12);
+        c.fillStyle = rgb(mix(p.far, p.groundEdge, 0.45), 0.6);
         c.beginPath();
         c.moveTo(x, y + s * 0.9);
         c.bezierCurveTo(x - s * 1.6, y - s * 0.1, x - s * 0.7, y - s * 1.2, x, y - s * 0.45);
@@ -507,9 +510,9 @@ export const WORLDS: Record<string, World> = {
       const off = v.camX * 0.28;
       for (let k = Math.floor(off / 5) - 1; k < off / 5 + v.w / 5 + 2; k++) {
         const x = (k * 5 - off) * v.ppt;
-        const h = (0.25 + hash(k * 7) * 0.35) * v.H;
-        const w = v.ppt * (0.8 + hash(k) * 0.8);
-        c.fillStyle = rgb(p.mid);
+        const h = (0.16 + hash(k * 7) * 0.22) * v.H;
+        const w = v.ppt * (2.4 + hash(k) * 1.6);
+        c.fillStyle = rgb(mix(p.mid, p.skyBottom, 0.3));
         c.beginPath();
         c.moveTo(x - w, v.H);
         c.lineTo(x, v.H - h);

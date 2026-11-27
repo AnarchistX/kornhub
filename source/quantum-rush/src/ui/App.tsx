@@ -17,7 +17,8 @@ import {
   type Settings,
 } from '../engine/save';
 import { Game, type Mode, type RunResult } from '../game/Game';
-import { SKINS, TRAILS } from '../game/skins';
+import { Renderer } from '../game/render';
+import { SKINS, TRAILS, type Skin, type Trail } from '../game/skins';
 import { rgb, worldFor } from '../game/worlds';
 
 type Screen =
@@ -405,6 +406,7 @@ function Play({
           },
         });
         game.current = g;
+        if (params.has('debug')) (window as unknown as { __qr: unknown }).__qr = { game: g, audio };
         g.start()
           .then(() => !cancelled && setLoading(false))
           .catch((e) => setError(String(e)));
@@ -661,12 +663,8 @@ function Custom({ save, update, onBack }: { save: SaveData; update: (fn: (s: Sav
         <span />
       </header>
       <div className="custom-body">
-        <div className="preview" style={{ ['--body' as string]: rgb(skin.body), ['--rim' as string]: rgb(skin.rim), ['--glow' as string]: rgb(skin.glow) }}>
-          <div className="spark">
-            <i className="e1" />
-            <i className="e2" />
-            <span className="ant" />
-          </div>
+        <div className="preview">
+          <RunnerPreview skin={skin} trail={TRAILS.find((t) => t.id === save.trail) ?? TRAILS[0]} />
           <p>{skin.name}</p>
         </div>
         <section>
@@ -715,6 +713,41 @@ function Custom({ save, update, onBack }: { save: SaveData; update: (fn: (s: Sav
           </div>
         </section>
       </div>
+    </div>
+  );
+}
+
+/** The real renderer drawing the runner in all four forms, so the preview matches the game exactly. */
+function RunnerPreview({ skin, trail }: { skin: Skin; trail: Trail }) {
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const [form, setForm] = useState('spark');
+  useEffect(() => {
+    const r = new Renderer(canvas.current!, true);
+    let raf = 0;
+    let last = performance.now();
+    const t0 = last;
+    let shown = '';
+    const frame = (ms: number) => {
+      raf = requestAnimationFrame(frame);
+      const f = r.preview(skin, trail, (ms - t0) / 1000, Math.min(0.05, (ms - last) / 1000));
+      last = ms;
+      if (f !== shown) {
+        shown = f;
+        setForm(f);
+      }
+    };
+    raf = requestAnimationFrame(frame);
+    const onResize = () => r.resize();
+    window.addEventListener('resize', onResize);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [skin, trail]);
+  return (
+    <div className="runner-preview">
+      <canvas ref={canvas} />
+      <span>{form}</span>
     </div>
   );
 }

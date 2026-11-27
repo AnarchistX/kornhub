@@ -766,70 +766,32 @@ button:disabled {
   font-family: Bungee, sans-serif;
   font-size: 20px;
 }
-.spark {
+.runner-preview {
   position: relative;
-  width: 92px;
-  height: 92px;
-  border-radius: 22px;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--body), #fff 25%), var(--body));
-  border: 5px solid var(--rim);
-  box-shadow:
-    0 0 40px var(--glow),
-    0 0 90px color-mix(in srgb, var(--glow), transparent 50%);
-  animation: hop-big 1s cubic-bezier(0.3, 0, 0.6, 1) infinite;
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 4 / 3;
+  border-radius: 20px;
+  background: radial-gradient(70% 70% at 55% 55%, rgba(255, 255, 255, 0.07), transparent 70%);
 }
-@keyframes hop-big {
-  0%,
-  100% {
-    transform: translateY(18px) scale(1.06, 0.92);
-  }
-  50% {
-    transform: translateY(-26px) rotate(0deg) scale(0.96, 1.05);
-  }
-}
-.spark i {
+.runner-preview canvas {
   position: absolute;
-  top: 30px;
-  width: 14px;
-  height: 20px;
-  border-radius: 7px;
-  background: #0b0716;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
 }
-.spark i::after {
-  content: '';
+.runner-preview span {
   position: absolute;
-  top: 3px;
-  right: 2px;
-  width: 5px;
-  height: 6px;
-  border-radius: 3px;
-  background: #fff;
-}
-.spark .e1 {
-  left: 44px;
-}
-.spark .e2 {
-  left: 64px;
-}
-.spark .ant {
-  position: absolute;
-  top: -22px;
-  left: 40px;
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: var(--rim);
-}
-.spark .ant::after {
-  content: '';
-  position: absolute;
-  top: -8px;
-  left: -4px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--glow);
-  box-shadow: 0 0 12px var(--glow);
+  left: 0;
+  right: 0;
+  top: 4px;
+  text-align: center;
+  font-family: Bungee, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--faint);
 }
 .custom section {
   flex: 1;
@@ -1016,19 +978,8 @@ input[type='checkbox'] {
   .menu .cta {
     min-height: 46px;
   }
-  .spark {
-    width: 72px;
-    height: 72px;
-    border-radius: 18px;
-  }
-  .spark i {
-    top: 22px;
-  }
-  .spark .e1 {
-    left: 32px;
-  }
-  .spark .e2 {
-    left: 50px;
+  .runner-preview {
+    max-width: 230px;
   }
   .custom-body {
     padding-top: calc(54px + var(--safe-t));
