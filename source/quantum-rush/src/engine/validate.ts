@@ -8,6 +8,7 @@ export interface RunResult {
   t: number;
   x: number;
   shards: number;
+  nodes: number[]; // pulse nodes bounced off
 }
 
 export function replay(level: Level, inputs: InputEvent[], shift = 0, jitter = 0, seed = 1): RunResult {
@@ -35,7 +36,7 @@ export function replay(level: Level, inputs: InputEvent[], shift = 0, jitter = 0
     }
     sim.step();
   }
-  return { done: sim.p.done, dead: sim.p.dead, t: sim.p.t, x: sim.p.x, shards: sim.p.shards };
+  return { done: sim.p.done, dead: sim.p.dead, t: sim.p.t, x: sim.p.x, shards: sim.p.shards, nodes: sim.p.nodes };
 }
 
 export interface Report {
@@ -56,7 +57,14 @@ export function validate(level: Level): Report {
     }
     return good;
   };
-  check('exact', replay(level, level.inputs));
+  const exact = replay(level, level.inputs);
+  check('exact', exact);
+  // running on (no shard jump) must pass under every shard node, never bounce off one
+  const shardNodes = level.objs.flatMap((o, i) => (o.kind === 'node' && o.style === 1 ? [i] : []));
+  if (exact.nodes.some((i) => shardNodes.includes(i))) {
+    ok = false;
+    lines.push('  ✗ the main path bounces off a shard node');
+  }
   check(`early ${Math.round(tol * 1000)}ms`, replay(level, level.inputs, -tol));
   check(`late ${Math.round(tol * 1000)}ms`, replay(level, level.inputs, tol));
   // independent per-press error, three quarters of the window (the shifts above cover a steady offset)

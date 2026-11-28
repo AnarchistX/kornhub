@@ -2,7 +2,7 @@
 // world around that path: hazards where *not* pressing kills, clearance where pressing passes.
 import { SONGS } from '../content/songs';
 import type { Form, InputEvent, Level, Obj, SectionInfo } from './types';
-import { BASE_SPEED, BODY_H, BODY_W, Sim, clonePlayer, type PlayerState } from './physics';
+import { BASE_SPEED, BODY_H, BODY_W, NODE_TOUCH, Sim, clonePlayer, type PlayerState } from './physics';
 
 export interface SectionSpec {
   bar: number; // first bar of the section (bars count from the song's first downbeat)
@@ -308,7 +308,6 @@ export function buildLevel(spec: LevelSpec): Level {
       case 'J':
       case 'K':
       case 'L':
-      case 'S':
       case 'R': {
         if (curForm !== 'spark') fail('jumps need the spark form');
         if (!p.grounded) fail('jump while airborne (the previous jump has not landed)');
@@ -323,18 +322,27 @@ export function buildLevel(spec: LevelSpec): Level {
           objs.push({ kind: 'rotor', x: top.x - 0.9, y: top.y + 1.5, w: 1.8, h: 1.8, r: 0.9, beat: e.t });
         }
         tap(e.t);
-        if (e.ch === 'S') {
-          const apexT = e.t + 0.25;
-          const apex = pr.path.reduce((a, s) => (Math.abs(s.t - apexT) < Math.abs(a.t - apexT) ? s : a), pr.path[0]);
-          objs.push({ kind: 'node', x: apex.x - 0.6, y: apex.y - 0.6, w: 1.2, h: 1.2, beat: apexT, style: 1 });
-          rebuild();
-          const alt = predict([...tapAt(e.t), ...tapAt(apexT)], landedAfter(apexT), 2.5);
-          const top = alt.path.reduce((a, s) => (s.y > a.y ? s : a), alt.path[0]);
-          objs.push({ kind: 'shard', x: top.x - 0.5, y: top.y - 0.5, w: 1, h: 1, idx: shardIdx });
-          reserved.push([apex.x, alt.end.x + 1.5]);
-          shardInputs.push(tapAt(apexT));
-          shardIdx++;
-        }
+        break;
+      }
+      case 'S': {
+        // a node hangs over the path at the top of a jump on this beat: run on and you pass under
+        // it; jump on the beat and you fly through it, and it launches you up to the shard
+        if (curForm !== 'spark') fail('shard routes need the spark form');
+        if (!p.grounded) fail('a shard route starts on the ground');
+        const opt = predict(tapAt(e.t), landedAfter(e.t), 2);
+        const v = sim.p.speed * BASE_SPEED;
+        const touchT = e.t + 0.21; // close to the top of that jump
+        const at = (t: number) => opt.path.reduce((a, s) => (Math.abs(s.t - t) < Math.abs(a.t - t) ? s : a), opt.path[0]);
+        const c = at(touchT + NODE_TOUCH / v); // centre sits one touch radius on, so contact starts at touchT
+        objs.push({ kind: 'node', x: c.x - 0.6, y: c.y - 0.6, w: 1.2, h: 1.2, beat: e.t, style: 1 });
+        rebuild();
+        const alt = predict(tapAt(e.t), (q) => q.grounded && q.t > touchT + 0.1, 2.5);
+        const top = alt.path.reduce((a, s) => (s.y > a.y ? s : a), alt.path[0]);
+        if (top.y < c.y + 1) fail('the shard jump does not reach its node');
+        objs.push({ kind: 'shard', x: top.x - 0.5, y: top.y - 0.5, w: 1, h: 1, idx: shardIdx });
+        reserved.push([x0 - 0.5, alt.end.x + 1.5]);
+        shardInputs.push(tapAt(e.t));
+        shardIdx++;
         break;
       }
       case 'U': {
@@ -361,16 +369,21 @@ export function buildLevel(spec: LevelSpec): Level {
         break;
       }
       case 'N': {
+        // a bounce node in the jump's path: it fires on contact, carrying the runner over a pit
         if (curForm !== 'spark') fail('nodes need the spark form');
-        if (p.grounded) fail('a node tap needs the runner in the air');
-        objs.push({ kind: 'node', x: x0 - 0.6, y: p.y - 0.6, w: 1.2, h: 1.2, beat: e.t });
+        if (p.grounded) fail('a node needs the runner in the air');
+        const ahead = predict([], (q) => q.t >= e.t + 0.25, 0.3);
+        const v = sim.p.speed * BASE_SPEED;
+        const dt = NODE_TOUCH / v; // centre one touch radius on along the path, so contact starts now
+        const c = ahead.path.reduce((a, s) => (Math.abs(s.t - (e.t + dt)) < Math.abs(a.t - (e.t + dt)) ? s : a), ahead.path[0]);
+        objs.push({ kind: 'node', x: c.x - 0.6, y: c.y - 0.6, w: 1.2, h: 1.2, beat: e.t });
         rebuild();
-        const pr = predict(tapAt(e.t), landedAfter(e.t), 2.5);
+        const pr = predict([], landedAfter(e.t), 2.5);
+        if (!pr.path.some((s) => s.y > c.y + 0.5)) fail('the jump does not reach its node');
         for (const o of lastGround) objs.splice(objs.indexOf(o), 1);
         lastGround = [];
-        // the second jump's landing moves with both presses, so the far side gets extra ground
+        // the bounce's landing moves with the jump's timing, so the far side gets extra ground
         pit(Math.max(lastTakeoff.x + slack(), floor.x + 0.5), pr.end.x - slack() - 0.75 * sim.p.speed);
-        tap(e.t);
         break;
       }
       case 'B': {

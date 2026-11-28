@@ -94,20 +94,18 @@ Form crystals turn it into:
 | **Blink** | a hollow diamond | tap: phase for 0.24 s | ground only; passes through phase walls while phased |
 
 Physics are the same in every level so skill carries over; the music only decides where
-things are. Base speed 10.4 tiles/s; speed gates set 1×, 1.24× or 1.45×. Pulse nodes give
-a fresh jump; boost plates launch higher (0.65 s in the air).
+things are. Base speed 10.4 tiles/s; speed gates set 1×, 1.24× or 1.45×. Pulse nodes are
+bounce pads in the air: flying through one launches you (no tap); boost plates launch
+higher (0.65 s in the air).
 
 Fairness: player hitbox 0.62 × 0.62 inside a 0.8 × 1 body; thorn hitboxes are 36 % wide and
-58 % tall of their art; a 140 ms press buffer and 60 ms coyote time; node taps count within
-1.15 tiles (height weighted at 0.6, so timing matters more than aim, and up to 1.5 tiles
-after passing the centre, because players tap as they see the overlap); a node always
-lifts you 2.1 tiles above itself, so a late, lower tap still reaches the same height;
-shards are picked up within 0.85 tiles.
+58 % tall of their art; a 140 ms press buffer and 60 ms coyote time; a pulse node fires when the runner comes
+within 1.0 tile of its centre (art plus body) and always lifts you 2.1 tiles above itself,
+however you arrive; shards are picked up within 0.85 tiles.
 
-Teaching: every pulse node has an approach ring that closes onto it on the beat the tap
-belongs to; in the first two levels nodes also say TAP, level 1 says TAP TO JUMP over its
-first thorn, and the levels that introduce a form say how it works over its crystal
-(TAP TO FLIP, HOLD TO RISE, TAP TO PHASE).
+Teaching: level 1 says TAP TO JUMP over its first thorn; shard nodes have an approach ring
+that closes on the beat to jump; the levels that introduce a form say how it works over
+its crystal (TAP TO FLIP, HOLD TO RISE, TAP TO PHASE).
 
 ## 6. Objects (original look)
 
@@ -116,12 +114,13 @@ first thorn, and the levels that introduce a form say how it works over its crys
 - **Pits**: missing floor.
 - **Rotors**: spinning blade discs (hazard), later levels.
 - **Beat lasers**: beams that switch on and off on the beat, telegraphed half a beat ahead.
-- **Pulse nodes**: hexagonal beacons; tap inside one for a mid-air jump.
+- **Pulse nodes**: hexagonal beacons in the air; flying through one bounces you up.
 - **Boost plates**: chevron plates that launch you, no input.
 - **Form crystals**: a prism you smash through to change form.
 - **Speed gates**: arched chevrons (one to four) that set the speed.
 - **Phase walls**: shimmering barriers only a phased Blink can pass.
-- **Shards**: three per level, off the main line; tapping a hidden route gets them.
+- **Shards**: three per level, high above a node that hangs over the path: run on and you
+  pass under it; jump on the beat and the node launches you to the shard.
 - **Practice beacons**: checkpoints in practice mode.
 
 ## 7. Charts and the level builder
@@ -150,7 +149,8 @@ its bar and step. The same intended inputs drive the title-screen demo.
 
 Chart rows are one bar each; a step is an eighth note (`grid: 16` for sixteenths).
 Spark: `J` jump a thorn · `K` two · `L` three · `U` step up · `D` step down · `G` gap ·
-`N` tap a node mid-air (one step after its jump) · `B` boost plate · `S` shard route ·
+`N` a bounce node in the jump's path, over a pit (one step after its jump) · `B` boost
+plate · `S` shard route (an optional jump through a hanging node; nothing on the main path) ·
 `R` jump under a rotor · `X` beat laser. Flux: `F` flip. Comet: `^` press, `v` release.
 Blink: `W` phase wall. `.` nothing.
 

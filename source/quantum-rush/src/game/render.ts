@@ -51,8 +51,7 @@ interface Particle {
 
 const TAU = Math.PI * 2;
 
-/** Levels where pulse nodes are labelled, and the hint shown over a form crystal where a form is new. */
-const TEACH_NODES = new Set(['lumen', 'siren']);
+/** The hint shown over a form crystal in the level where that form is new. */
 const FORM_HINTS: Record<string, Partial<Record<Form, string>>> = {
   genesis: { flux: 'TAP TO FLIP' },
   lattice: { comet: 'HOLD TO RISE' },
@@ -540,8 +539,8 @@ export class Renderer {
         c.beginPath();
         c.arc(cx, cy, r * 0.35, 0, TAU);
         c.fill();
-        if (!used && o.beat !== undefined) {
-          // an approach ring closes onto the node on the beat the tap belongs to
+        if (!used && o.beat !== undefined && o.style === 1) {
+          // on a shard route the ring closes on the beat to jump, to fly through the node
           const lead = o.beat - s.t;
           const span = 0.6;
           if (lead > -0.06 && lead < span) {
@@ -552,8 +551,6 @@ export class Renderer {
             c.arc(cx, cy, r * (1.05 + k * 2.4), 0, TAU);
             c.stroke();
           }
-          // the first two levels say it outright
-          if (TEACH_NODES.has(s.level.id) && lead > -0.1 && lead < 1.4) this.hint('TAP', cx, cy - r * 2.1, ppt * 0.42, [255, 255, 255]);
         }
         break;
       }
