@@ -1,7 +1,7 @@
 {
   "name": "Quantum Rush",
   "short_name": "Quantum Rush",
-  "description": "Jump, flip and fly through neon worlds that pulse to the beat.",
+  "description": "Jump, flip and fly.",
   "start_url": "/quantum-rush/",
   "scope": "/quantum-rush/",
   "display": "fullscreen",
