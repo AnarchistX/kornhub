@@ -136,7 +136,7 @@ function Title({ save, onPlay, onCustom, onSettings }: { save: SaveData; onPlay:
           <span>QUANTUM</span>
           <span>RUSH</span>
         </h1>
-        <p className="tag">One button. Ten songs by Kxrnage. Every jump on the beat.</p>
+        <p className="tag">Jump, flip and fly through neon worlds that pulse to the beat.</p>
         {og ? null : !armed ? (
           <button
             className="cta"

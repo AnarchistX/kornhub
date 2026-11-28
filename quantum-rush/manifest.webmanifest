@@ -1,7 +1,7 @@
 {
   "name": "Quantum Rush",
   "short_name": "Quantum Rush",
-  "description": "A one-button rhythm runner. Ten levels, ten songs by Kxrnage, every jump on the beat.",
+  "description": "Jump, flip and fly through neon worlds that pulse to the beat.",
   "start_url": "/quantum-rush/",
   "scope": "/quantum-rush/",
   "display": "fullscreen",
