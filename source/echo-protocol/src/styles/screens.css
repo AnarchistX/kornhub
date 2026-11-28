@@ -181,8 +181,10 @@
 }
 .home-link {
   position: absolute;
-  top: calc(16px + var(--safe-t));
-  left: calc(18px + var(--safe-l));
+  z-index: 4; /* above .title-ui, which covers the whole screen; below the .begin splash */
+  top: calc(6px + var(--safe-t));
+  left: calc(8px + var(--safe-l));
+  padding: 10px;
   font: 600 12px var(--f-mono);
   letter-spacing: 0.2em;
   color: var(--paper);
