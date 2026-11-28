@@ -27,7 +27,8 @@ export const BUFFER = 0.14; // a press this early before landing still counts
 export const COYOTE = 0.06;
 export const STEP_SNAP = 0.2; // ledges lower than this are climbed instead of crashed into
 export const NODE_R = 1.15; // tap radius around a pulse node (bigger than the art, on purpose)
-export const SHARD_R = 0.6;
+export const NODE_RISE = (NODE_V * NODE_V) / (2 * SPARK_G); // a node always lifts you this high above it
+export const SHARD_R = 0.85;
 
 export type DeathCause = 'thorn' | 'wall' | 'fall' | 'rotor' | 'laser' | 'phase';
 
@@ -184,10 +185,14 @@ export class Sim {
           if (o.kind !== 'node' || p.nodes.includes(i)) continue;
           const cx = o.x + o.w / 2;
           const cy = o.y + o.h / 2;
-          // judged mostly on timing: height counts for less than distance along the run
-          if (Math.hypot(p.x - cx, (p.y - cy) * 0.6) <= NODE_R) {
+          // judged mostly on timing: height counts for less than distance along the run, and a
+          // tap just after passing the centre still counts (players tap as they see the overlap)
+          const dx = p.x - cx;
+          if (Math.hypot(dx > 0 ? dx * 0.75 : dx, (p.y - cy) * 0.6) <= NODE_R) {
             p.nodes.push(i);
-            this.jump(NODE_V, 'node');
+            // a late tap, lower on the arc, still reaches the same height above the node
+            const climb = Math.max(0, (cy + NODE_RISE - p.y) * -p.grav);
+            this.jump(Math.max(NODE_V, Math.sqrt(2 * SPARK_G * climb)), 'node');
             break;
           }
         }

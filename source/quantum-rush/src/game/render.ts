@@ -51,6 +51,14 @@ interface Particle {
 
 const TAU = Math.PI * 2;
 
+/** Levels where pulse nodes are labelled, and the hint shown over a form crystal where a form is new. */
+const TEACH_NODES = new Set(['lumen', 'siren']);
+const FORM_HINTS: Record<string, Partial<Record<Form, string>>> = {
+  genesis: { flux: 'TAP TO FLIP' },
+  lattice: { comet: 'HOLD TO RISE' },
+  firstlight: { blink: 'TAP TO PHASE' },
+};
+
 export class Renderer {
   c: CanvasRenderingContext2D;
   dpr = 1;
@@ -69,6 +77,7 @@ export class Renderer {
   private flash = 0;
   private ambientT = 0;
   private objIndex = new Map<Obj, number>();
+  private firstThorn: number | null = null;
   private loopBars = 0;
 
   constructor(
@@ -91,6 +100,7 @@ export class Renderer {
   setLevel(level: Level) {
     this.world = worldFor(level.world);
     this.objIndex = new Map(level.objs.map((o, i) => [o, i]));
+    this.firstThorn = level.objs.find((o) => o.kind === 'thorn')?.x ?? null;
     // endless runs loop whole bars of the song; the energy map loops with them
     const bar = (4 * 60) / level.song.bpm;
     this.loopBars = level.id.startsWith('endless') ? Math.max(1, Math.floor((level.song.duration - level.song.bar0 - 0.5) / bar)) : 0;
@@ -214,6 +224,11 @@ export class Renderer {
         c.fillStyle = rgb(lighten(pal.groundEdge, 0.5), 0.92);
         c.fillText(s.practice ? `PRACTICE` : `ATTEMPT ${s.attempt}`, ax, Y(5.4));
       }
+      // level 1 says how to jump, right over the first thorn
+      if (lvl.id === 'lumen' && this.firstThorn !== null) {
+        const hx = X(this.firstThorn + 0.5);
+        if (hx > -ppt * 4 && hx < this.W + ppt * 4) this.hint('TAP TO JUMP', hx, Y(3.6), ppt * 0.5, lighten(pal.groundEdge, 0.55));
+      }
     }
 
     // ---------------------------------------------------------------- runner
@@ -301,6 +316,20 @@ export class Renderer {
     this.drawParticles(v, X, Y, dt);
     this.drawRunner(s, v, X, Y, Math.exp(-((t * 2) % 1) * 6));
     return form;
+  }
+
+  /** A short teaching caption, outlined so it reads on any backdrop. */
+  private hint(text: string, x: number, y: number, size: number, color: RGB) {
+    const c = this.c;
+    c.font = `${Math.round(size)}px Bungee, sans-serif`;
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.lineJoin = 'round';
+    c.lineWidth = Math.max(3, size * 0.28);
+    c.strokeStyle = 'rgba(5, 3, 12, 0.7)';
+    c.strokeText(text, x, y);
+    c.fillStyle = rgb(color, 0.96);
+    c.fillText(text, x, y);
   }
 
   private currentPalette(): Palette {
@@ -511,6 +540,21 @@ export class Renderer {
         c.beginPath();
         c.arc(cx, cy, r * 0.35, 0, TAU);
         c.fill();
+        if (!used && o.beat !== undefined) {
+          // an approach ring closes onto the node on the beat the tap belongs to
+          const lead = o.beat - s.t;
+          const span = 0.6;
+          if (lead > -0.06 && lead < span) {
+            const k = Math.max(0, lead) / span;
+            c.strokeStyle = rgb(lighten(col, 0.45), 0.25 + (1 - k) * 0.7);
+            c.lineWidth = Math.max(2, ppt * (0.06 + (1 - k) * 0.05));
+            c.beginPath();
+            c.arc(cx, cy, r * (1.05 + k * 2.4), 0, TAU);
+            c.stroke();
+          }
+          // the first two levels say it outright
+          if (TEACH_NODES.has(s.level.id) && lead > -0.1 && lead < 1.4) this.hint('TAP', cx, cy - r * 2.1, ppt * 0.42, [255, 255, 255]);
+        }
         break;
       }
       case 'boost': {
@@ -560,6 +604,9 @@ export class Renderer {
         c.fillStyle = rgb(pal.ground);
         formGlyph(c, o.form ?? 'spark');
         c.restore();
+        // the level that introduces a form says how it works
+        const hint = FORM_HINTS[s.level.id]?.[o.form ?? 'spark'];
+        if (hint) this.hint(hint, cx, cy - h / 2 - ppt * 0.9, ppt * 0.5, lighten(pal.accent2, 0.6));
         break;
       }
       case 'gate': {

@@ -99,7 +99,15 @@ a fresh jump; boost plates launch higher (0.65 s in the air).
 
 Fairness: player hitbox 0.62 × 0.62 inside a 0.8 × 1 body; thorn hitboxes are 36 % wide and
 58 % tall of their art; a 140 ms press buffer and 60 ms coyote time; node taps count within
-1.15 tiles (height weighted at 0.6, so timing matters more than aim).
+1.15 tiles (height weighted at 0.6, so timing matters more than aim, and up to 1.5 tiles
+after passing the centre, because players tap as they see the overlap); a node always
+lifts you 2.1 tiles above itself, so a late, lower tap still reaches the same height;
+shards are picked up within 0.85 tiles.
+
+Teaching: every pulse node has an approach ring that closes onto it on the beat the tap
+belongs to; in the first two levels nodes also say TAP, level 1 says TAP TO JUMP over its
+first thorn, and the levels that introduce a form say how it works over its crystal
+(TAP TO FLIP, HOLD TO RISE, TAP TO PHASE).
 
 ## 6. Objects (original look)
 
